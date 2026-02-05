@@ -1,8 +1,17 @@
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { Hero, Section, Container, ContactForm } from '@/components/ui';
+import { Hero, Section, Container } from '@/components/ui';
 import { LocationIcon, EmailIcon, PhoneIcon, InstagramIcon, FacebookIcon, YouTubeIcon } from '@/components/icons';
 import { contactInfo } from '@/lib/constants';
+
+const ContactForm = dynamic(
+  () => import('@/components/ui/ContactForm').then(mod => ({ default: mod.ContactForm })),
+  {
+    loading: () => <div className="h-96 bg-charcoal-800 rounded-2xl animate-pulse" />,
+    ssr: false
+  }
+);
 
 export const metadata: Metadata = {
   title: 'Contact | M3NOOVER',

@@ -22,7 +22,7 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { label: 'Instagram', href: 'https://instagram.com', icon: InstagramIcon },
+  { label: 'Instagram', href: 'https://instagram.com/coach_m3noover', icon: InstagramIcon },
   { label: 'Facebook', href: 'https://facebook.com', icon: FacebookIcon },
   { label: 'YouTube', href: 'https://youtube.com', icon: YouTubeIcon },
   { label: 'Twitter', href: 'https://twitter.com', icon: TwitterIcon },

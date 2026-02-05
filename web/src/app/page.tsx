@@ -30,6 +30,7 @@ export default function HomePage() {
         ctaPrimary={{ text: 'Start Training', href: '/contact' }}
         ctaSecondary={{ text: 'View Programs', href: '/programs' }}
         fullHeight
+        backgroundImage="/images/hero-training.jpg"
       />
 
       {/* Pillars Section */}
@@ -74,6 +75,8 @@ export default function HomePage() {
                 key={feature.title}
                 title={feature.title}
                 description={feature.description}
+                imageSrc={feature.imageSrc}
+                imageAlt={feature.imageAlt}
                 reversed={index % 2 === 1}
               />
             ))}

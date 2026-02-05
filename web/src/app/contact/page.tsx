@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { Hero, Section, Container, ContactForm } from '@/components/ui';
 import { LocationIcon, EmailIcon, PhoneIcon, InstagramIcon, FacebookIcon, YouTubeIcon } from '@/components/icons';
 import { contactInfo } from '@/lib/constants';
@@ -86,7 +87,7 @@ export default function ContactPage() {
                 <h3 className="font-semibold text-white mb-4">Follow Us</h3>
                 <div className="flex gap-4">
                   {[
-                    { icon: InstagramIcon, label: 'Instagram', href: 'https://instagram.com' },
+                    { icon: InstagramIcon, label: 'Instagram', href: 'https://instagram.com/coach_m3noover' },
                     { icon: FacebookIcon, label: 'Facebook', href: 'https://facebook.com' },
                     { icon: YouTubeIcon, label: 'YouTube', href: 'https://youtube.com' },
                   ].map((social) => (
@@ -104,10 +105,16 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* Map Placeholder */}
+              {/* Facility Image */}
               <div className="mt-10">
-                <div className="aspect-video rounded-xl bg-gradient-to-br from-charcoal-700 to-charcoal-900 flex items-center justify-center">
-                  <span className="text-neutral-600 text-sm">Map Placeholder</span>
+                <div className="aspect-video rounded-xl overflow-hidden relative">
+                  <Image
+                    src="/images/contact-bg.jpg"
+                    alt="Athletes at Self Made Training Facility"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                  />
                 </div>
               </div>
             </div>

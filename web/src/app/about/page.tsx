@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Button } from '@m3noover/ui';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Hero, Section, Container, SectionHeading } from '@/components/ui';
 import { CheckIcon, ArrowRightIcon } from '@/components/icons';
 import { coachStory } from '@/lib/constants';
@@ -26,27 +27,41 @@ export default function AboutPage() {
       {/* Story Section */}
       <Section variant="dark" padding="lg">
         <Container size="md">
-          <div className="prose prose-lg prose-invert mx-auto">
-            <p className="text-xl text-neutral-300 leading-relaxed mb-8">
-              {coachStory.intro}
-            </p>
-
-            <div className="my-12 p-8 rounded-2xl bg-charcoal-800 border border-charcoal-700">
-              <h3 className="text-xl font-bold text-white mb-6">The Journey</h3>
-              <ul className="space-y-4">
-                {coachStory.journey.map((item, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <CheckIcon className="w-5 h-5 text-accent-500 mt-1 flex-shrink-0" />
-                    <span className="text-neutral-300">{item}</span>
-                  </li>
-                ))}
-              </ul>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-12">
+            {/* Coach Portrait */}
+            <div className="relative aspect-[3/4] max-w-md mx-auto lg:max-w-none rounded-2xl overflow-hidden">
+              <Image
+                src="/images/coach-chuck-portrait.jpg"
+                alt="Coach Chuck"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                priority
+              />
             </div>
 
-            <p className="text-lg text-neutral-300 leading-relaxed">
-              {coachStory.clients}
-            </p>
+            <div className="prose prose-lg prose-invert">
+              <p className="text-xl text-neutral-300 leading-relaxed mb-8">
+                {coachStory.intro}
+              </p>
+
+              <div className="p-8 rounded-2xl bg-charcoal-800 border border-charcoal-700">
+                <h3 className="text-xl font-bold text-white mb-6">The Journey</h3>
+                <ul className="space-y-4">
+                  {coachStory.journey.map((item, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <CheckIcon className="w-5 h-5 text-accent-500 mt-1 flex-shrink-0" />
+                      <span className="text-neutral-300">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
+
+          <p className="text-lg text-neutral-300 leading-relaxed text-center max-w-3xl mx-auto">
+            {coachStory.clients}
+          </p>
         </Container>
       </Section>
 
@@ -75,11 +90,17 @@ export default function AboutPage() {
         </Container>
       </Section>
 
-      {/* Image Placeholder Section */}
+      {/* Training in Action Section */}
       <Section variant="dark" padding="md">
         <Container>
-          <div className="aspect-[21/9] rounded-2xl bg-gradient-to-br from-charcoal-700 to-charcoal-900 flex items-center justify-center">
-            <span className="text-neutral-600">Training in Action - Image Placeholder</span>
+          <div className="aspect-[21/9] rounded-2xl overflow-hidden relative">
+            <Image
+              src="/images/coach-chuck-action.jpg"
+              alt="Coach Chuck coaching athlete"
+              fill
+              className="object-cover"
+              sizes="100vw"
+            />
           </div>
         </Container>
       </Section>

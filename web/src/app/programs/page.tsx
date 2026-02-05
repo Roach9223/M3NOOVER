@@ -34,6 +34,8 @@ export default function ProgramsPage() {
                 title={program.title}
                 description={program.description}
                 features={program.features}
+                imageSrc={program.imageSrc}
+                imageAlt={program.imageAlt}
                 href="/contact"
                 ctaText="Get Started"
               />

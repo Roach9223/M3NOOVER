@@ -72,7 +72,7 @@ const localBusinessData: LocalBusinessSchema = {
   priceRange: '$$',
   image: 'https://m3noover.com/og-image.jpg', // Update with actual image
   sameAs: [
-    'https://www.instagram.com/m3noover', // Update with actual social
+    'https://www.instagram.com/coach_m3noover',
     'https://www.facebook.com/m3noover',
   ],
 };

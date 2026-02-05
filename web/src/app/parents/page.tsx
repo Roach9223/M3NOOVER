@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Button } from '@m3noover/ui';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Hero, Section, Container, SectionHeading, FeatureList } from '@/components/ui';
 import { CalendarIcon, ChatIcon, ShieldIcon, HeartIcon, ArrowRightIcon } from '@/components/icons';
 import { parentFeatures } from '@/lib/constants';
@@ -44,20 +45,34 @@ export default function ParentsPage() {
 
       {/* Promise Section */}
       <Section padding="lg">
-        <Container size="md">
-          <div className="text-center">
-            <div className="inline-block p-1 px-4 rounded-full bg-accent-500/10 text-accent-400 text-sm font-medium mb-6">
-              Our Promise to You
+        <Container>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Image */}
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden">
+              <Image
+                src="/images/parents-trust.jpg"
+                alt="Coach Chuck overseeing athlete training on equipment"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
             </div>
 
-            <blockquote className="text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight mb-8">
-              &quot;Your child won&apos;t just get a workout —<br />
-              <span className="text-gradient-brand">they&apos;ll get structure, discipline, and mentorship.&quot;</span>
-            </blockquote>
+            {/* Content */}
+            <div className="text-center lg:text-left">
+              <div className="inline-block p-1 px-4 rounded-full bg-accent-500/10 text-accent-400 text-sm font-medium mb-6">
+                Our Promise to You
+              </div>
 
-            <p className="text-lg text-neutral-300 max-w-2xl mx-auto">
-              Coach Chuck treats every young athlete like family. High standards with real empathy means your child will be pushed to grow — but never pushed beyond what&apos;s safe and appropriate.
-            </p>
+              <blockquote className="text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight mb-8">
+                &quot;Your child won&apos;t just get a workout —<br />
+                <span className="text-gradient-brand">they&apos;ll get structure, discipline, and mentorship.&quot;</span>
+              </blockquote>
+
+              <p className="text-lg text-neutral-300 max-w-2xl mx-auto lg:mx-0">
+                Coach Chuck treats every young athlete like family. High standards with real empathy means your child will be pushed to grow — but never pushed beyond what&apos;s safe and appropriate.
+              </p>
+            </div>
           </div>
         </Container>
       </Section>

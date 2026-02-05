@@ -7,6 +7,7 @@ import { ReactNode } from 'react';
 import { Container } from './Container';
 import { staggerContainer, staggerItem, transitions } from '@/lib/animations';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface HeroProps {
   title: string | ReactNode;
@@ -16,6 +17,7 @@ interface HeroProps {
   fullHeight?: boolean;
   className?: string;
   children?: ReactNode;
+  backgroundImage?: string;
 }
 
 export function Hero({
@@ -26,6 +28,7 @@ export function Hero({
   fullHeight = false,
   className,
   children,
+  backgroundImage,
 }: HeroProps) {
   return (
     <section
@@ -36,8 +39,24 @@ export function Hero({
       )}
       data-testid="hero"
     >
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-charcoal-900/50 via-black to-black" />
+      {/* Background image */}
+      {backgroundImage && (
+        <Image
+          src={backgroundImage}
+          alt=""
+          fill
+          priority
+          className="object-cover"
+        />
+      )}
+
+      {/* Background gradient overlay */}
+      <div className={cn(
+        "absolute inset-0",
+        backgroundImage
+          ? "bg-black/60"
+          : "bg-gradient-to-b from-charcoal-900/50 via-black to-black"
+      )} />
 
       {/* Animated gradient orbs */}
       <motion.div

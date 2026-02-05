@@ -16,16 +16,22 @@ export const whyM3Features = [
     title: 'No Hype. Just Results.',
     description:
       'We skip the gimmicks and focus on what works. Evidence-based training methods tailored to your goals and ability level.',
+    imageSrc: '/images/why-results.jpg',
+    imageAlt: 'Group of athletes flexing at mural, showing confidence and results',
   },
   {
     title: 'Real Coaching, Real Connection',
     description:
       "You're not just a number. We invest in understanding your goals, challenges, and what drives you to push forward.",
+    imageSrc: '/images/why-connection.jpg',
+    imageAlt: 'Coach Chuck working one-on-one with youth athlete',
   },
   {
     title: 'Built for Athletes',
     description:
       'Whether you\'re a student athlete looking to earn a scholarship or an adult rediscovering your competitive edge — we meet you where you are.',
+    imageSrc: '/images/why-athletes.jpg',
+    imageAlt: 'Two athletes training on pull-up bar',
   },
 ];
 
@@ -41,6 +47,8 @@ export const programs = [
       'Mental performance coaching',
       'Progress tracking & feedback',
     ],
+    imageSrc: '/images/program-youth.jpg',
+    imageAlt: 'Young athletes training with tire',
   },
   {
     slug: 'group',
@@ -53,6 +61,8 @@ export const programs = [
       'Cost-effective option',
       'Flexible scheduling',
     ],
+    imageSrc: '/images/program-group.jpg',
+    imageAlt: 'Group training at mural wall',
   },
   {
     slug: 'personal',
@@ -65,6 +75,8 @@ export const programs = [
       'Flexible scheduling',
       'Detailed progress analysis',
     ],
+    imageSrc: '/images/program-personal.jpg',
+    imageAlt: 'Coach Chuck working directly with athlete',
   },
   {
     slug: 'camps',
@@ -77,6 +89,8 @@ export const programs = [
       'Competition preparation',
       'Team sessions available',
     ],
+    imageSrc: '/images/program-team.jpg',
+    imageAlt: 'Team training session with basketball team',
   },
 ];
 

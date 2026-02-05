@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@m3noover/shared';
 import { Button } from '@m3noover/ui';
 import Link from 'next/link';
+import Image from 'next/image';
 import { CheckIcon } from '@/components/icons';
 import { scaleIn, staggerItem, transitions } from '@/lib/animations';
 
@@ -14,6 +15,8 @@ interface ProgramCardProps {
   href: string;
   ctaText?: string;
   slug: string;
+  imageSrc?: string;
+  imageAlt?: string;
   className?: string;
 }
 
@@ -24,6 +27,8 @@ export function ProgramCard({
   href,
   ctaText = 'Get Started',
   slug,
+  imageSrc,
+  imageAlt,
   className,
 }: ProgramCardProps) {
   return (
@@ -42,12 +47,22 @@ export function ProgramCard({
       )}
       data-testid={`program-card-${slug}`}
     >
-      {/* Image placeholder */}
+      {/* Image */}
       <div className="aspect-[16/10] bg-gradient-to-br from-charcoal-700 to-charcoal-900 relative overflow-hidden">
+        {imageSrc ? (
+          <Image
+            src={imageSrc}
+            alt={imageAlt || title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-neutral-600">
+            <span className="text-sm">Image Placeholder</span>
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal-800 to-transparent" />
-        <div className="absolute inset-0 flex items-center justify-center text-neutral-600">
-          <span className="text-sm">Image Placeholder</span>
-        </div>
       </div>
 
       {/* Content */}

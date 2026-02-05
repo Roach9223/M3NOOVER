@@ -4,10 +4,11 @@ import { InstagramIcon, FacebookIcon, YouTubeIcon, TwitterIcon } from '@/compone
 
 const footerLinks = {
   quickLinks: [
-    { label: 'Home', href: '/' },
-    { label: 'About', href: '/about' },
-    { label: 'Programs', href: '/programs' },
-    { label: 'Contact', href: '/contact' },
+    { label: 'Home', href: '/', external: false },
+    { label: 'About', href: '/about', external: false },
+    { label: 'Programs', href: '/programs', external: false },
+    { label: 'Contact', href: '/contact', external: false },
+    { label: 'Client Portal', href: 'https://m3noover.app', external: true },
   ],
   programs: [
     { label: 'Youth Athletes', href: '/programs#youth' },
@@ -71,12 +72,23 @@ export function Footer() {
             <ul className="space-y-3" data-testid="footer-links">
               {footerLinks.quickLinks.map((link) => (
                 <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-neutral-400 hover:text-accent-400 transition-colors"
-                  >
-                    {link.label}
-                  </Link>
+                  {link.external ? (
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-neutral-400 hover:text-accent-400 transition-colors"
+                    >
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link
+                      href={link.href}
+                      className="text-sm text-neutral-400 hover:text-accent-400 transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

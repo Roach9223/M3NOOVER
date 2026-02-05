@@ -31,7 +31,16 @@ export default function HomePage() {
         ctaSecondary={{ text: 'View Programs', href: '/programs' }}
         fullHeight
         backgroundImage="/images/hero-training.jpg"
-      />
+      >
+        <a
+          href="https://m3noover.app"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-neutral-400 hover:text-accent-400 transition-colors inline-flex items-center gap-1"
+        >
+          Already a member? Access the Client Portal →
+        </a>
+      </Hero>
 
       {/* Pillars Section */}
       <Section variant="dark" padding="lg">

@@ -76,7 +76,16 @@ export function Navigation() {
             </div>
 
             {/* Desktop CTA */}
-            <div className="hidden lg:block" data-testid="nav-cta">
+            <div className="hidden lg:flex items-center gap-3" data-testid="nav-cta">
+              <a
+                href="https://m3noover.app"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="outline" size="md">
+                  Client Portal
+                </Button>
+              </a>
               <Link href="/contact">
                 <Button variant="primary" size="md">
                   Get Started

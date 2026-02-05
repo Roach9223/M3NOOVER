@@ -103,7 +103,7 @@ export function MobileMenu({ isOpen, onClose, links }: MobileMenuProps) {
 
               {/* CTA */}
               <motion.div
-                className="mt-8 pt-8 border-t border-charcoal-700"
+                className="mt-8 pt-8 border-t border-charcoal-700 space-y-3"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
@@ -113,6 +113,17 @@ export function MobileMenu({ isOpen, onClose, links }: MobileMenuProps) {
                     Get Started
                   </Button>
                 </Link>
+                <a
+                  href="https://m3noover.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={onClose}
+                  className="block"
+                >
+                  <Button variant="outline" size="lg" className="w-full">
+                    Client Portal
+                  </Button>
+                </a>
               </motion.div>
             </nav>
           </motion.div>

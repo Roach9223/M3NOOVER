@@ -44,14 +44,20 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-white mb-1">Training Location</h3>
-                    <p className="text-neutral-400">
+                    <a
+                      href={contactInfo.location.googleMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-neutral-400 hover:text-accent-400 transition-colors"
+                    >
                       {contactInfo.location.name}<br />
-                      {contactInfo.location.city}, {contactInfo.location.state}
-                    </p>
+                      {contactInfo.location.address.street}<br />
+                      {contactInfo.location.address.city}, {contactInfo.location.address.state} {contactInfo.location.address.zip}
+                    </a>
                   </div>
                 </div>
 
-                {/* Email Placeholder */}
+                {/* Email */}
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-lg bg-accent-500/10 flex items-center justify-center text-accent-400 flex-shrink-0">
                     <EmailIcon className="w-6 h-6" />
@@ -59,14 +65,14 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-semibold text-white mb-1">Email</h3>
                     <p className="text-neutral-400">
-                      <a href="mailto:coach@m3noover.com" className="hover:text-accent-400 transition-colors">
-                        coach@m3noover.com
+                      <a href={`mailto:${contactInfo.email}`} className="hover:text-accent-400 transition-colors">
+                        {contactInfo.email}
                       </a>
                     </p>
                   </div>
                 </div>
 
-                {/* Phone Placeholder */}
+                {/* Phone */}
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-lg bg-accent-500/10 flex items-center justify-center text-accent-400 flex-shrink-0">
                     <PhoneIcon className="w-6 h-6" />
@@ -74,8 +80,8 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-semibold text-white mb-1">Phone</h3>
                     <p className="text-neutral-400">
-                      <a href="tel:+15551234567" className="hover:text-accent-400 transition-colors">
-                        (555) 123-4567
+                      <a href={`tel:${contactInfo.phone.tel}`} className="hover:text-accent-400 transition-colors">
+                        {contactInfo.phone.display}
                       </a>
                     </p>
                   </div>
@@ -87,9 +93,9 @@ export default function ContactPage() {
                 <h3 className="font-semibold text-white mb-4">Follow Us</h3>
                 <div className="flex gap-4">
                   {[
-                    { icon: InstagramIcon, label: 'Instagram', href: 'https://instagram.com/coach_m3noover' },
-                    { icon: FacebookIcon, label: 'Facebook', href: 'https://facebook.com' },
-                    { icon: YouTubeIcon, label: 'YouTube', href: 'https://youtube.com' },
+                    { icon: InstagramIcon, label: 'Instagram', href: contactInfo.social.instagram },
+                    { icon: FacebookIcon, label: 'Facebook', href: contactInfo.social.facebook },
+                    { icon: YouTubeIcon, label: 'YouTube', href: contactInfo.social.youtube },
                   ].map((social) => (
                     <a
                       key={social.label}

@@ -1,4 +1,5 @@
 import { brand } from '@m3noover/shared';
+import { contactInfo } from '@/lib/constants';
 
 interface LocalBusinessSchema {
   '@context': 'https://schema.org';
@@ -40,40 +41,41 @@ const localBusinessData: LocalBusinessSchema = {
   name: brand.name.primary,
   description: brand.tagline,
   url: 'https://m3noover.com',
-  telephone: '+1-951-555-0123', // Update with actual phone
-  email: 'contact@m3noover.com', // Update with actual email
+  telephone: contactInfo.phone.tel,
+  email: contactInfo.email,
   address: {
     '@type': 'PostalAddress',
-    streetAddress: '27499 Commerce Center Dr', // Update with actual address
-    addressLocality: 'Temecula',
-    addressRegion: 'CA',
-    postalCode: '92590',
-    addressCountry: 'US',
+    streetAddress: contactInfo.location.address.street,
+    addressLocality: contactInfo.location.address.city,
+    addressRegion: contactInfo.location.address.state,
+    postalCode: contactInfo.location.address.zip,
+    addressCountry: contactInfo.location.address.country,
   },
   geo: {
     '@type': 'GeoCoordinates',
-    latitude: 33.4936,
-    longitude: -117.1484,
+    latitude: contactInfo.location.coordinates.latitude,
+    longitude: contactInfo.location.coordinates.longitude,
   },
   openingHoursSpecification: [
     {
       '@type': 'OpeningHoursSpecification',
       dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-      opens: '06:00',
-      closes: '20:00',
+      opens: contactInfo.hours.weekdays.open,
+      closes: contactInfo.hours.weekdays.close,
     },
     {
       '@type': 'OpeningHoursSpecification',
       dayOfWeek: ['Saturday'],
-      opens: '08:00',
-      closes: '14:00',
+      opens: contactInfo.hours.saturday.open,
+      closes: contactInfo.hours.saturday.close,
     },
   ],
   priceRange: '$$',
-  image: 'https://m3noover.com/og-image.jpg', // Update with actual image
+  image: 'https://m3noover.com/og-image.jpg',
   sameAs: [
-    'https://www.instagram.com/coach_m3noover',
-    'https://www.facebook.com/m3noover',
+    contactInfo.social.instagram,
+    contactInfo.social.facebook,
+    contactInfo.social.youtube,
   ],
 };
 
@@ -109,9 +111,9 @@ const sportsActivityData: SportsActivitySchema = {
   ],
   address: {
     '@type': 'PostalAddress',
-    addressLocality: 'Temecula',
-    addressRegion: 'CA',
-    addressCountry: 'US',
+    addressLocality: contactInfo.location.address.city,
+    addressRegion: contactInfo.location.address.state,
+    addressCountry: contactInfo.location.address.country,
   },
 };
 

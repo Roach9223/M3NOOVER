@@ -141,10 +141,33 @@ export const coachStory = {
 };
 
 export const contactInfo = {
+  phone: {
+    display: '(951) 490-5358',
+    tel: '+19514905358',
+  },
+  email: 'chuck@m3noover.com',
   location: {
     name: 'Self Made Training Facility',
-    city: 'Temecula',
-    state: 'CA',
+    fullName: 'Self Made Training Facility Temecula Valley',
+    address: {
+      street: '25389 Madison Ave Suite C-101',
+      city: 'Murrieta',
+      state: 'CA',
+      zip: '92562',
+      country: 'US',
+    },
+    googleMapsUrl: 'https://maps.google.com/?q=25389+Madison+Ave+Suite+C-101+Murrieta+CA+92562',
+    coordinates: { latitude: 33.5539, longitude: -117.2139 },
+  },
+  hours: {
+    weekdays: { open: '06:00', close: '20:00' },
+    saturday: { open: '08:00', close: '16:00' },
+    sunday: 'By Appointment',
+  },
+  social: {
+    instagram: 'https://instagram.com/coach_m3noover',
+    facebook: 'https://facebook.com/m3noover',
+    youtube: 'https://youtube.com/@m3noover',
   },
 };
 

@@ -20,6 +20,7 @@ interface FormErrors {
   name?: string;
   email?: string;
   message?: string;
+  submit?: string;
 }
 
 export function ContactForm({ className }: ContactFormProps) {
@@ -61,12 +62,25 @@ export function ContactForm({ className }: ContactFormProps) {
     if (!validate()) return;
 
     setIsSubmitting(true);
+    setErrors({});
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        setErrors({ submit: result.error || 'Failed to send message' });
+        return;
+      }
+      setIsSubmitted(true);
+    } catch {
+      setErrors({ submit: 'Network error. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const inputClasses = cn(
@@ -181,6 +195,13 @@ export function ContactForm({ className }: ContactFormProps) {
         />
         {errors.message && <p className={errorClasses}>{errors.message}</p>}
       </div>
+
+      {/* Submit Error */}
+      {errors.submit && (
+        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+          {errors.submit}
+        </div>
+      )}
 
       {/* Submit */}
       <Button

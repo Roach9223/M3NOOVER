@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { brand } from '@m3noover/shared';
 import { InstagramIcon, FacebookIcon, YouTubeIcon, TwitterIcon } from '@/components/icons';
+import { contactInfo } from '@/lib/constants';
 
 const footerLinks = {
   quickLinks: [
@@ -23,10 +24,9 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { label: 'Instagram', href: 'https://instagram.com/coach_m3noover', icon: InstagramIcon },
-  { label: 'Facebook', href: 'https://facebook.com', icon: FacebookIcon },
-  { label: 'YouTube', href: 'https://youtube.com', icon: YouTubeIcon },
-  { label: 'Twitter', href: 'https://twitter.com', icon: TwitterIcon },
+  { label: 'Instagram', href: contactInfo.social.instagram, icon: InstagramIcon },
+  { label: 'Facebook', href: contactInfo.social.facebook, icon: FacebookIcon },
+  { label: 'YouTube', href: contactInfo.social.youtube, icon: YouTubeIcon },
 ];
 
 export function Footer() {
@@ -116,11 +116,37 @@ export function Footer() {
           {/* Contact Info */}
           <div>
             <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
-              Training Location
+              Contact
             </h3>
-            <address className="not-italic text-sm text-neutral-400 space-y-2">
-              <p>Self Made Training Facility</p>
-              <p>Temecula, CA</p>
+            <address className="not-italic text-sm text-neutral-400 space-y-3">
+              <p>
+                <a
+                  href={contactInfo.location.googleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-accent-400 transition-colors"
+                >
+                  {contactInfo.location.name}<br />
+                  {contactInfo.location.address.street}<br />
+                  {contactInfo.location.address.city}, {contactInfo.location.address.state} {contactInfo.location.address.zip}
+                </a>
+              </p>
+              <p>
+                <a
+                  href={`tel:${contactInfo.phone.tel}`}
+                  className="hover:text-accent-400 transition-colors"
+                >
+                  {contactInfo.phone.display}
+                </a>
+              </p>
+              <p>
+                <a
+                  href={`mailto:${contactInfo.email}`}
+                  className="hover:text-accent-400 transition-colors"
+                >
+                  {contactInfo.email}
+                </a>
+              </p>
             </address>
           </div>
         </div>

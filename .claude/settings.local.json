@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm add:*)",
+      "Bash(timeout 15 pnpm dev:*)",
+      "Bash(pnpm build:web:*)",
+      "Bash(pnpm build:app:*)",
+      "Bash(pnpm exec next build:*)",
+      "Bash(pnpm --filter @m3noover/app build:*)",
+      "Bash(del /f \"c:\\\\Users\\\\jrowb\\\\Desktop\\\\M3NOOVER\\\\app\\\\src\\\\lib\\\\supabase\\\\index.ts\")",
+      "Bash(pnpm build:*)",
+      "Bash(timeout 20 pnpm dev:app:*)",
+      "Bash(npx next info:*)",
+      "Bash(taskkill:*)",
+      "Bash(curl:*)",
+      "Bash(ping:*)",
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx next build:*)",
+      "Bash(echo:*)"
+    ]
+  }
+}

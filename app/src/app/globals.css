@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand Colors */
+  --color-black: #0A0A0A;
+
+  /* Charcoal scale */
+  --color-charcoal-900: #121212;
+  --color-charcoal-800: #1A1A1A;
+  --color-charcoal-700: #242424;
+  --color-charcoal-600: #2E2E2E;
+  --color-charcoal-500: #3D3D3D;
+
+  /* Accent - Electric Blue */
+  --color-accent-50: #E6FBFF;
+  --color-accent-100: #B3F3FF;
+  --color-accent-200: #80EBFF;
+  --color-accent-300: #4DE3FF;
+  --color-accent-400: #1ADBFF;
+  --color-accent-500: #00D4FF;
+  --color-accent-600: #00A8CC;
+  --color-accent-700: #007D99;
+  --color-accent-800: #005266;
+  --color-accent-900: #002733;
+
+  /* Secondary - Bold Orange */
+  --color-secondary-50: #FFF0EB;
+  --color-secondary-100: #FFD9CC;
+  --color-secondary-200: #FFB399;
+  --color-secondary-300: #FF8C66;
+  --color-secondary-400: #FF6B35;
+  --color-secondary-500: #E55A2B;
+  --color-secondary-600: #CC4A22;
+  --color-secondary-700: #993718;
+  --color-secondary-800: #66250F;
+  --color-secondary-900: #331207;
+
+  /* Font families */
+  --font-sans: 'Inter', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+:root {
+  --foreground: #fafafa;
+  --background: #0a0a0a;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-sans);
+}
+
+/* PWA safe area support */
+@supports (padding-top: env(safe-area-inset-top)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3d3d3d;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #525252;
+}

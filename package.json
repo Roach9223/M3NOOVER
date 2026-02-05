@@ -1,0 +1,27 @@
+{
+  "name": "m3noover",
+  "version": "0.1.0",
+  "private": true,
+  "description": "M3NOOVER - Building Strong Bodies, Disciplined Minds, and Confident Athletes",
+  "scripts": {
+    "dev:web": "pnpm --filter @m3noover/web dev",
+    "dev:app": "pnpm --filter @m3noover/app dev",
+    "build:web": "pnpm --filter @m3noover/web build",
+    "build:app": "pnpm --filter @m3noover/app build",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "clean": "pnpm -r clean"
+  },
+  "keywords": [
+    "fitness",
+    "coaching",
+    "athletic",
+    "training"
+  ],
+  "author": "",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18.17.0"
+  }
+}

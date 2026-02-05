@@ -1,0 +1,41 @@
+{
+  "name": "@m3noover/app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3001",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "clean": "rm -rf .next out"
+  },
+  "dependencies": {
+    "@m3noover/shared": "workspace:*",
+    "@m3noover/ui": "workspace:*",
+    "@stripe/stripe-js": "^8.7.0",
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.94.1",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
+    "framer-motion": "^11.0.0",
+    "next": "14.2.0",
+    "next-pwa": "^5.6.0",
+    "react": "^18.2.0",
+    "react-big-calendar": "^1.19.4",
+    "react-dom": "^18.2.0",
+    "resend": "^6.9.1",
+    "stripe": "^20.3.0",
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.0",
+    "@types/react-big-calendar": "^1.16.3",
+    "@types/react-dom": "^18.2.0",
+    "autoprefixer": "^10.4.18",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.3.0"
+  }
+}

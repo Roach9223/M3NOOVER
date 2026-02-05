@@ -1,0 +1,5 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Maskable icons need safe zone padding (10% each side = 80% safe area) -->
+  <rect width="512" height="512" fill="#0A0A0A"/>
+  <text x="256" y="300" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="140" font-weight="900" fill="#00D4FF">M3</text>
+</svg>

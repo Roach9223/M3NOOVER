@@ -11,7 +11,12 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Global error:', error);
+    // Log error message and digest only (no stack traces in production)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Global error:', error);
+    } else {
+      console.error('Application error:', error.message, error.digest ? `(${error.digest})` : '');
+    }
   }, [error]);
 
   return (

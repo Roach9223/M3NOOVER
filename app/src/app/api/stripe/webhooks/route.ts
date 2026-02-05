@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { stripe } from '@/lib/stripe';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
+import { logger } from '@/lib/logger';
 
 // Use service role for webhook operations (bypasses RLS)
 // Only create client if environment variables are available
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
-    console.error('Webhook signature verification failed:', err);
+    logger.error('Webhook signature verification failed', err);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
@@ -71,12 +72,12 @@ export async function POST(request: Request) {
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        logger.debug('Unhandled Stripe event', { eventType: event.type });
     }
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('Webhook handler error:', error);
+    logger.error('Webhook handler failed', error);
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
   }
 }
@@ -98,17 +99,17 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       })
       .eq('id', metadata.invoice_id);
 
-    console.log(`Invoice ${metadata.invoice_id} marked as paid`);
+    logger.info('Invoice marked as paid', { invoiceId: metadata.invoice_id });
   }
 
   if (metadata?.type === 'subscription' && metadata.package_id && metadata.user_id) {
     // Subscription will be handled by subscription.created event
-    console.log(`Subscription checkout completed for package ${metadata.package_id}`);
+    logger.info('Subscription checkout completed', { packageId: metadata.package_id });
   }
 
   if (metadata?.type === 'one_time_package' && metadata.package_id && metadata.user_id) {
     // Log one-time package purchase (could create a sessions credit record)
-    console.log(`One-time package ${metadata.package_id} purchased by user ${metadata.user_id}`);
+    logger.info('One-time package purchased', { packageId: metadata.package_id });
   }
 }
 
@@ -133,7 +134,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     .single();
 
   if (!profile) {
-    console.error('Could not find profile for customer:', email);
+    logger.warn('Could not find profile for customer');
     return;
   }
 
@@ -176,7 +177,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       .insert(subData);
   }
 
-  console.log(`Subscription ${subscription.id} updated`);
+  logger.info('Subscription updated');
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
@@ -190,7 +191,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     })
     .eq('stripe_subscription_id', subscription.id);
 
-  console.log(`Subscription ${subscription.id} cancelled`);
+  logger.info('Subscription cancelled');
 }
 
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
@@ -198,7 +199,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   // Cast to access subscription property which may exist on invoice
   const invoiceAny = invoice as unknown as { subscription?: string | null };
   if (invoiceAny.subscription) {
-    console.log(`Subscription invoice paid: ${invoice.id}`);
+    logger.info('Subscription invoice paid');
   }
 }
 

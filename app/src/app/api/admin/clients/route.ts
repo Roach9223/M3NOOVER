@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 interface CreateClientRequest {
   parent: {
@@ -94,7 +95,7 @@ export async function POST(request: Request) {
       .single();
 
     if (profileError) {
-      console.error('Error creating profile:', profileError);
+      logger.error('Failed to create client profile', profileError);
       return NextResponse.json(
         { error: 'Failed to create client profile' },
         { status: 500 }
@@ -116,7 +117,7 @@ export async function POST(request: Request) {
       .insert(athleteInserts);
 
     if (athletesError) {
-      console.error('Error creating athletes:', athletesError);
+      logger.error('Failed to create athletes', athletesError);
       // Try to clean up the profile
       await supabase.from('profiles').delete().eq('id', newProfile.id);
       return NextResponse.json(
@@ -136,7 +137,7 @@ export async function POST(request: Request) {
         });
 
       if (subError) {
-        console.error('Error creating subscription:', subError);
+        logger.error('Failed to create subscription', subError);
         // Non-fatal - client was still created
       }
     }
@@ -149,7 +150,7 @@ export async function POST(request: Request) {
       message: 'Client created successfully',
     });
   } catch (error) {
-    console.error('Create client error:', error);
+    logger.error('Failed to create client', error);
     return NextResponse.json(
       { error: 'Failed to create client' },
       { status: 500 }

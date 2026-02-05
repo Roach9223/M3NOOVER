@@ -46,15 +46,30 @@ export default function AboutPage() {
               </p>
 
               <div className="p-8 rounded-2xl bg-charcoal-800 border border-charcoal-700">
-                <h3 className="text-xl font-bold text-white mb-6">The Journey</h3>
-                <ul className="space-y-4">
-                  {coachStory.journey.map((item, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <CheckIcon className="w-5 h-5 text-accent-500 mt-1 flex-shrink-0" />
-                      <span className="text-neutral-300">{item}</span>
-                    </li>
-                  ))}
-                </ul>
+                <div className="flex flex-col md:flex-row gap-6">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-white mb-6">The Journey</h3>
+                    <ul className="space-y-4">
+                      {coachStory.journey.map((item, index) => (
+                        <li key={index} className="flex items-start gap-3">
+                          <CheckIcon className="w-5 h-5 text-accent-500 mt-1 flex-shrink-0" />
+                          <span className="text-neutral-300">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="flex-shrink-0 md:w-48">
+                    <div className="aspect-square rounded-xl overflow-hidden relative">
+                      <Image
+                        src="/images/coach-chuck-headshot.jpg"
+                        alt="Coach Chuck headshot"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 192px"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -98,7 +113,7 @@ export default function AboutPage() {
               src="/images/coach-chuck-action.jpg"
               alt="Coach Chuck coaching athlete"
               fill
-              className="object-cover"
+              className="object-cover object-top"
               sizes="100vw"
             />
           </div>

@@ -41,6 +41,8 @@ export interface SchedulingSettings {
   created_at: string;
 }
 
+export type GoogleSyncStatus = 'pending' | 'synced' | 'failed' | 'not_applicable';
+
 export interface Booking {
   id: string;
   parent_id: string;
@@ -54,6 +56,9 @@ export interface Booking {
   cancelled_by: string | null;
   cancellation_reason: string | null;
   reminder_sent: boolean;
+  google_event_id: string | null;
+  google_sync_status: GoogleSyncStatus;
+  google_sync_error: string | null;
   created_at: string;
   updated_at: string;
   session_type?: SessionType;

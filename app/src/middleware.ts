@@ -26,8 +26,15 @@ export async function middleware(request: NextRequest) {
 
   // Logged in and trying to access auth pages
   if (user && isPublicRoute && pathname !== '/auth/callback') {
+    // Check if user is admin to redirect to admin dashboard
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
     const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
+    url.pathname = profile?.role === 'admin' ? '/admin' : '/dashboard';
     return NextResponse.redirect(url);
   }
 

@@ -65,7 +65,8 @@ export default function BookSessionPage() {
       });
 
       if (res.ok) {
-        router.push('/schedule?booked=true');
+        const booking = await res.json();
+        router.push(`/schedule/${booking.id}?booked=true`);
       } else {
         const error = await res.json();
         alert(error.error || 'Failed to book session');

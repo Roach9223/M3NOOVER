@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { addMinutes, isBefore, isAfter } from 'date-fns';
+import { addMinutes, isBefore } from 'date-fns';
+import { isGoogleCalendarConfigured, syncBookingToCalendar } from '@/lib/google-calendar';
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -139,6 +140,13 @@ export async function POST(request: Request) {
   }
 
   // TODO: Send confirmation email
+
+  // Sync to Google Calendar (non-blocking)
+  if (isGoogleCalendarConfigured()) {
+    syncBookingToCalendar(data.id).catch((err) =>
+      console.error('Calendar sync failed:', err)
+    );
+  }
 
   return NextResponse.json(data, { status: 201 });
 }

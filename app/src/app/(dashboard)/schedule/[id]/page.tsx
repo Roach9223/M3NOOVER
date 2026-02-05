@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@m3noover/ui';
 import { format } from 'date-fns';
 import { formatAmountForDisplay } from '@/lib/format';
+import { AddToCalendar } from '@/components/scheduling';
 import type { Booking } from '@/types/scheduling';
 
 const statusColors: Record<string, string> = {
@@ -19,9 +20,11 @@ const statusColors: Record<string, string> = {
 export default function BookingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCancelling, setIsCancelling] = useState(false);
+  const isNewBooking = searchParams.get('booked') === 'true';
 
   useEffect(() => {
     async function fetchBooking() {
@@ -89,6 +92,28 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
+      {/* Success Banner for new bookings */}
+      {isNewBooking && (
+        <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-6">
+          <div className="flex items-start gap-4">
+            <div className="p-2 bg-green-500/20 rounded-full">
+              <svg className="w-6 h-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h2 className="text-lg font-semibold text-green-400">Session Booked!</h2>
+              <p className="text-green-400/80 mt-1">
+                Your training session has been confirmed. Add it to your calendar so you don&apos;t forget!
+              </p>
+              <div className="mt-4">
+                <AddToCalendar booking={booking!} variant="buttons" size="sm" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/schedule">
@@ -100,7 +125,9 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-white">Session Details</h1>
+          <h1 className="text-2xl font-bold text-white">
+            {isNewBooking ? 'Booking Confirmed' : 'Session Details'}
+          </h1>
         </div>
       </div>
 
@@ -177,18 +204,27 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
       </div>
 
       {/* Actions */}
-      {canCancel && (
-        <div className="flex gap-4">
+      <div className="space-y-4">
+        {/* Add to Calendar - show for confirmed/pending bookings */}
+        {(booking.status === 'confirmed' || booking.status === 'pending') && !isNewBooking && (
+          <div className="bg-charcoal-900 border border-charcoal-800 rounded-xl p-6">
+            <p className="text-sm text-neutral-400 mb-3">Add this session to your calendar</p>
+            <AddToCalendar booking={booking} variant="buttons" />
+          </div>
+        )}
+
+        {/* Cancel button */}
+        {canCancel && (
           <Button
             variant="outline"
             onClick={handleCancel}
             disabled={isCancelling}
-            className="flex-1 text-red-400 border-red-400/50 hover:bg-red-500/10"
+            className="w-full text-red-400 border-red-400/50 hover:bg-red-500/10"
           >
             {isCancelling ? 'Cancelling...' : 'Cancel Session'}
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

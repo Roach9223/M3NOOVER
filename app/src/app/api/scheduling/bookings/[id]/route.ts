@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { differenceInHours, isBefore } from 'date-fns';
+import { differenceInHours } from 'date-fns';
+import {
+  isGoogleCalendarConfigured,
+  syncBookingToCalendar,
+  deleteCalendarEvent,
+} from '@/lib/google-calendar';
 
 export async function GET(
   request: Request,
@@ -111,6 +116,14 @@ export async function PATCH(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // Sync update to Google Calendar (non-blocking)
+  // Only sync if time-related fields were updated
+  if (isGoogleCalendarConfigured() && (updates.start_time || updates.end_time || updates.notes)) {
+    syncBookingToCalendar(id).catch((err) =>
+      console.error('Calendar sync failed:', err)
+    );
+  }
+
   return NextResponse.json(data);
 }
 
@@ -178,11 +191,19 @@ export async function DELETE(
       cancelled_by: user.id,
       cancellation_reason: body.reason || null,
       updated_at: new Date().toISOString(),
+      google_sync_status: 'not_applicable',
     })
     .eq('id', id);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Delete from Google Calendar (non-blocking)
+  if (isGoogleCalendarConfigured() && existing.google_event_id) {
+    deleteCalendarEvent(existing.google_event_id).catch((err) =>
+      console.error('Calendar delete failed:', err)
+    );
   }
 
   // TODO: Send cancellation notification

@@ -24,7 +24,8 @@
       "Bash(dir:*)",
       "Bash(pip install:*)",
       "Bash(python -c:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(find:*)"
     ]
   }
 }

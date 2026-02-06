@@ -26,57 +26,49 @@ export default function AboutPage() {
 
       {/* Story Section */}
       <Section variant="dark" padding="lg">
-        <Container size="md">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-12">
-            {/* Coach Portrait */}
-            <div className="relative aspect-[3/4] max-w-md mx-auto lg:max-w-none rounded-2xl overflow-hidden">
-              <Image
-                src="/images/coach-chuck-portrait.jpg"
-                alt="Coach Chuck"
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                priority
-              />
+        <Container size="lg">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+            {/* Coach Portrait - Large and impactful */}
+            <div className="relative">
+              <div className="sticky top-8">
+                {/* Decorative accent border */}
+                <div className="absolute -inset-2 bg-gradient-to-br from-accent-500/20 to-transparent rounded-3xl blur-sm" />
+                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-white/10">
+                  <Image
+                    src="/images/coach-chuck-portrait.jpg"
+                    alt="Coach Chuck"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    priority
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="prose prose-lg prose-invert">
+            {/* Text Content */}
+            <div className="flex flex-col justify-center">
               <p className="text-xl text-neutral-300 leading-relaxed mb-8">
                 {coachStory.intro}
               </p>
 
-              <div className="p-8 rounded-2xl bg-charcoal-800 border border-charcoal-700">
-                <div className="flex flex-col md:flex-row gap-6">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-white mb-6">The Journey</h3>
-                    <ul className="space-y-4">
-                      {coachStory.journey.map((item, index) => (
-                        <li key={index} className="flex items-start gap-3">
-                          <CheckIcon className="w-5 h-5 text-accent-500 mt-1 flex-shrink-0" />
-                          <span className="text-neutral-300">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="flex-shrink-0 md:w-48">
-                    <div className="aspect-square rounded-xl overflow-hidden relative">
-                      <Image
-                        src="/images/coach-chuck-headshot.jpg"
-                        alt="Coach Chuck headshot"
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 192px"
-                      />
-                    </div>
-                  </div>
-                </div>
+              <div className="p-8 rounded-2xl bg-charcoal-800 border border-charcoal-700 mb-8">
+                <h3 className="text-xl font-bold text-white mb-6">The Journey</h3>
+                <ul className="space-y-4">
+                  {coachStory.journey.map((item, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <CheckIcon className="w-5 h-5 text-accent-500 mt-1 flex-shrink-0" />
+                      <span className="text-neutral-300">{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
+
+              <p className="text-lg text-neutral-300 leading-relaxed">
+                {coachStory.clients}
+              </p>
             </div>
           </div>
-
-          <p className="text-lg text-neutral-300 leading-relaxed text-center max-w-3xl mx-auto">
-            {coachStory.clients}
-          </p>
         </Container>
       </Section>
 

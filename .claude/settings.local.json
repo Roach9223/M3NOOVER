@@ -29,7 +29,8 @@
       "Bash(grep:*)",
       "Bash(findstr:*)",
       "Bash(pnpm install:*)",
-      "Bash(pnpm fetch-stripe-prices:*)"
+      "Bash(pnpm fetch-stripe-prices:*)",
+      "Bash(npm run lint:*)"
     ]
   }
 }

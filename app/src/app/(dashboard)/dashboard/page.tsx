@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { BookingCTA } from '@/components/dashboard/BookingCTA';
+import { BookingFAB } from '@/components/dashboard/BookingFAB';
+import { type SubscriptionTier } from '@/lib/stripe/products';
 
 export const dynamic = 'force-dynamic';
 
@@ -76,6 +79,21 @@ interface AthleteWithLastSession extends Athlete {
   last_session_date: string | null;
 }
 
+interface SubscriptionData {
+  tier: SubscriptionTier;
+  sessions_per_week: number | null;
+  status: string;
+}
+
+// Helper to get start of current week (Monday 00:00 UTC)
+function getStartOfWeek(): Date {
+  const now = new Date();
+  const day = now.getUTCDay();
+  const diff = now.getUTCDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+  const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), diff, 0, 0, 0, 0));
+  return monday;
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -121,6 +139,50 @@ export default async function DashboardPage() {
     .gt('start_time', new Date().toISOString())
     .order('start_time')
     .limit(5);
+
+  // Fetch active subscription
+  const { data: subscriptionData } = await supabase
+    .from('subscriptions')
+    .select('tier, sessions_per_week, status')
+    .eq('parent_id', user.id)
+    .eq('status', 'active')
+    .single();
+
+  const subscription: SubscriptionData | null = subscriptionData as SubscriptionData | null;
+
+  // Fetch sessions booked this week
+  const startOfWeek = getStartOfWeek();
+  const { count: sessionsThisWeek } = await supabase
+    .from('bookings')
+    .select('*', { count: 'exact', head: true })
+    .eq('parent_id', user.id)
+    .gte('start_time', startOfWeek.toISOString())
+    .in('status', ['confirmed', 'pending', 'completed']);
+
+  // Fetch available session credits
+  const { data: creditsData } = await supabase
+    .from('session_credits')
+    .select('total_sessions, used_sessions')
+    .eq('profile_id', user.id)
+    .or('expires_at.is.null,expires_at.gt.now()');
+
+  const availableCredits = (creditsData || []).reduce(
+    (sum, credit) => sum + (credit.total_sessions - credit.used_sessions),
+    0
+  );
+
+  // Get next upcoming session for CTA display
+  const nextSession = upcomingSessions?.[0]
+    ? {
+        start_time: (upcomingSessions[0] as Record<string, unknown>).start_time as string,
+        session_type_name:
+          ((upcomingSessions[0] as Record<string, unknown>).session_types as { name: string } | null)?.name ||
+          'Training Session',
+      }
+    : null;
+
+  // Check if user has booking eligibility
+  const hasBookingEligibility = !!subscription || availableCredits > 0;
 
   // Get last session for each athlete
   const athleteIds = athletes?.map(a => a.id) || [];
@@ -174,6 +236,14 @@ export default async function DashboardPage() {
           Here&apos;s your family&apos;s training overview
         </p>
       </div>
+
+      {/* Booking CTA Banner */}
+      <BookingCTA
+        subscription={subscription}
+        sessionsThisWeek={sessionsThisWeek || 0}
+        availableCredits={availableCredits}
+        nextSession={nextSession}
+      />
 
       {/* Outstanding Balance Card */}
       {outstandingBalance > 0 ? (
@@ -334,6 +404,9 @@ export default async function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Mobile Floating Action Button */}
+      <BookingFAB hasEligibility={hasBookingEligibility} />
     </div>
   );
 }

@@ -84,8 +84,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
+    // Log the error but return 200 to prevent Stripe from retrying
+    // Stripe retries on non-2xx responses, which can cause duplicates
     logger.error('Webhook handler failed', error);
-    return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
+    return NextResponse.json({ received: true, error: 'Handler failed but acknowledged' });
   }
 }
 
@@ -175,6 +177,18 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
     if (sessions <= 0) {
       logger.warn('Invalid session count in checkout metadata');
+      return;
+    }
+
+    // Idempotency check: skip if this checkout session was already processed
+    const { data: existingCredit } = await supabaseAdmin
+      .from('session_credits')
+      .select('id')
+      .eq('stripe_checkout_session_id', session.id)
+      .single();
+
+    if (existingCredit) {
+      logger.info('Session credits already exist for checkout session (idempotent)', { sessionId: session.id });
       return;
     }
 

@@ -30,7 +30,8 @@
       "Bash(findstr:*)",
       "Bash(pnpm install:*)",
       "Bash(pnpm fetch-stripe-prices:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(npm run build:*)"
     ]
   }
 }

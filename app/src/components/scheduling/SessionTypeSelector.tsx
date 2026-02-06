@@ -2,18 +2,77 @@
 
 import { formatAmountForDisplay } from '@/lib/format';
 import type { SessionType } from '@/types/scheduling';
+import type { BookingEligibility } from '@/app/api/booking-eligibility/route';
+
+type PaymentMethod = 'subscription' | 'credits' | 'none';
 
 interface SessionTypeSelectorProps {
   sessionTypes: SessionType[];
   selectedId?: string;
   onSelect: (sessionType: SessionType) => void;
+  eligibility?: BookingEligibility | null;
+}
+
+function getPaymentMethod(eligibility?: BookingEligibility | null): PaymentMethod {
+  if (!eligibility) return 'none';
+
+  // Has active subscription with remaining sessions (or unlimited)
+  if (eligibility.subscription) {
+    const { sessionsRemaining } = eligibility.subscription;
+    // Unlimited (null) or has remaining sessions
+    if (sessionsRemaining === null || sessionsRemaining > 0) {
+      return 'subscription';
+    }
+  }
+
+  // Using credits (either no subscription, or subscription limit reached)
+  if (eligibility.sessionCredits && eligibility.sessionCredits.available > 0) {
+    return 'credits';
+  }
+
+  return 'none';
 }
 
 export function SessionTypeSelector({
   sessionTypes,
   selectedId,
   onSelect,
+  eligibility,
 }: SessionTypeSelectorProps) {
+  const paymentMethod = getPaymentMethod(eligibility);
+
+  const renderPricing = () => {
+    if (paymentMethod === 'subscription') {
+      return (
+        <div className="flex items-center gap-1.5 text-green-500">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span className="text-sm font-medium">Included</span>
+        </div>
+      );
+    }
+
+    if (paymentMethod === 'credits') {
+      return (
+        <div className="text-right">
+          <p className="text-lg font-bold text-accent-500">1 credit</p>
+          <p className="text-xs text-neutral-500">
+            {eligibility?.sessionCredits?.available} remaining
+          </p>
+        </div>
+      );
+    }
+
+    // Show dollar price (shouldn't normally happen for eligible users)
+    return null;
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {sessionTypes.map((type) => (
@@ -58,9 +117,11 @@ export function SessionTypeSelector({
                 </span>
               )}
             </div>
-            <p className="text-xl font-bold text-accent-500">
-              {formatAmountForDisplay(type.price_cents)}
-            </p>
+            {renderPricing() || (
+              <p className="text-xl font-bold text-accent-500">
+                {formatAmountForDisplay(type.price_cents)}
+              </p>
+            )}
           </div>
         </button>
       ))}

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 export const metadata = {
@@ -81,12 +82,17 @@ export default async function DashboardPage() {
     return null;
   }
 
-  // Get user profile
+  // Get user profile with role
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name')
+    .select('full_name, role')
     .eq('id', user.id)
     .single();
+
+  // Redirect admin users to admin dashboard
+  if (profile?.role === 'admin') {
+    redirect('/admin');
+  }
 
   const firstName = profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || 'there';
 

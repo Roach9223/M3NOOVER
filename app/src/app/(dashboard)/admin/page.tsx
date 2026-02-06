@@ -231,10 +231,10 @@ export default async function AdminPage() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl lg:text-3xl font-bold text-white">
-          Admin Dashboard
+          Welcome back, Coach!
         </h1>
         <p className="text-neutral-400 mt-1">
-          Manage athletes and sessions
+          Here&apos;s your daily overview
         </p>
       </div>
 

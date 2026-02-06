@@ -1,9 +1,4 @@
-/**
- * @deprecated Import from '@/lib/stripe/server' or '@/lib/stripe/client' instead.
- * This file is maintained for backwards compatibility.
- */
-
-// Re-export everything from the modular structure
+// Re-export server utilities (for API routes)
 export {
   stripe,
   getOrCreateStripeCustomer,
@@ -11,8 +6,9 @@ export {
   isStripeConfigured,
   formatAmountForDisplay,
   formatAmountForStripe,
-} from './stripe/server';
+} from './server';
 
+// Re-export products config
 export {
   STRIPE_PRODUCTS,
   SUBSCRIPTION_TIERS,
@@ -22,4 +18,8 @@ export {
   getPriceId,
   type SubscriptionTier,
   type OneTimePurchase,
-} from './stripe/products';
+} from './products';
+
+// Note: Client utilities (getStripe, redirectToCheckout) should be imported
+// directly from '@/lib/stripe/client' in client components to avoid
+// bundling server code in the client bundle.

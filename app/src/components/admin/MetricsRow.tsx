@@ -4,6 +4,7 @@ import { formatAmountForDisplay } from '@/lib/format';
 
 interface MetricsRowProps {
   revenueThisMonth: number;
+  mrr: number;
   activeClients: number;
   sessionsThisWeek: number;
   outstandingCount: number;
@@ -12,6 +13,7 @@ interface MetricsRowProps {
 
 export function MetricsRow({
   revenueThisMonth,
+  mrr,
   activeClients,
   sessionsThisWeek,
   outstandingCount,
@@ -24,6 +26,13 @@ export function MetricsRow({
       sublabel: 'Revenue',
       color: 'text-green-400',
       bgColor: 'bg-green-500/10',
+    },
+    {
+      label: 'MRR',
+      value: formatAmountForDisplay(mrr),
+      sublabel: 'Recurring',
+      color: 'text-purple-400',
+      bgColor: 'bg-purple-500/10',
     },
     {
       label: 'Clients',
@@ -49,7 +58,7 @@ export function MetricsRow({
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
       {metrics.map((metric) => (
         <div
           key={metric.label}

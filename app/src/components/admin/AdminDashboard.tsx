@@ -8,8 +8,19 @@ import { ActivityFeed } from './ActivityFeed';
 import { QuickActionsBar } from './QuickActionsBar';
 import { QuickNoteModal } from './QuickNoteModal';
 import type { SessionData } from './SessionRow';
-import type { DashboardStats } from '@/app/api/admin/dashboard-stats/route';
 import type { ActivityItem } from '@/app/api/admin/recent-activity/route';
+
+interface DashboardStats {
+  revenueThisMonth: number;
+  mrr: number;
+  activeClients: number;
+  sessionsThisWeek: number;
+  sessionsToday: number;
+  outstandingInvoices: {
+    count: number;
+    totalCents: number;
+  };
+}
 
 interface AdminDashboardProps {
   initialSessions: SessionData[];
@@ -92,6 +103,7 @@ export function AdminDashboard({
       {/* Key Metrics */}
       <MetricsRow
         revenueThisMonth={initialStats.revenueThisMonth}
+        mrr={initialStats.mrr}
         activeClients={initialStats.activeClients}
         sessionsThisWeek={initialStats.sessionsThisWeek}
         outstandingCount={initialStats.outstandingInvoices.count}

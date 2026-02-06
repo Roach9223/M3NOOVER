@@ -25,7 +25,11 @@
       "Bash(pip install:*)",
       "Bash(python -c:*)",
       "Bash(tree:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(findstr:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm fetch-stripe-prices:*)"
     ]
   }
 }

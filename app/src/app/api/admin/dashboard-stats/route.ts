@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { STRIPE_PRODUCTS, type SubscriptionTier } from '@/lib/stripe/products';
 
 export interface DashboardStats {
   revenueThisMonth: number;
+  mrr: number;
   activeClients: number;
   sessionsThisWeek: number;
   sessionsToday: number;
@@ -45,7 +47,9 @@ export async function GET() {
 
     // Fetch all stats in parallel
     const [
-      revenueResult,
+      invoiceRevenueResult,
+      sessionCreditsRevenueResult,
+      activeSubscriptionsResult,
       clientsResult,
       weekSessionsResult,
       todaySessionsResult,
@@ -57,6 +61,18 @@ export async function GET() {
         .select('total_cents')
         .eq('status', 'paid')
         .gte('paid_at', startOfMonth.toISOString()),
+
+      // Revenue from session credit purchases this month
+      supabase
+        .from('session_credits')
+        .select('price_cents')
+        .gte('purchased_at', startOfMonth.toISOString()),
+
+      // Active subscriptions for MRR calculation
+      supabase
+        .from('subscriptions')
+        .select('tier')
+        .eq('status', 'active'),
 
       // Active clients (profiles with athletes)
       supabase
@@ -86,11 +102,25 @@ export async function GET() {
         .in('status', ['draft', 'sent', 'overdue']),
     ]);
 
-    // Calculate revenue
-    const revenueThisMonth = revenueResult.data?.reduce(
+    // Calculate total revenue this month (invoices + session credit purchases)
+    const invoiceRevenue = invoiceRevenueResult.data?.reduce(
       (sum, inv) => sum + (inv.total_cents || 0),
       0
     ) || 0;
+    const creditRevenue = sessionCreditsRevenueResult.data?.reduce(
+      (sum, c) => sum + (c.price_cents || 0),
+      0
+    ) || 0;
+    const revenueThisMonth = invoiceRevenue + creditRevenue;
+
+    // Calculate MRR from active subscriptions
+    const mrr = activeSubscriptionsResult.data?.reduce((sum, sub) => {
+      const tier = sub.tier as SubscriptionTier | null;
+      if (tier && STRIPE_PRODUCTS.subscriptions[tier]) {
+        return sum + STRIPE_PRODUCTS.subscriptions[tier].price;
+      }
+      return sum;
+    }, 0) || 0;
 
     // Count unique clients
     const uniqueParentIds = new Set(
@@ -113,6 +143,7 @@ export async function GET() {
 
     const stats: DashboardStats = {
       revenueThisMonth,
+      mrr,
       activeClients,
       sessionsThisWeek,
       sessionsToday,

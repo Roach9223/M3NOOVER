@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { stripe } from '@/lib/stripe';
+import { stripe, getOrCreateStripeCustomer, STRIPE_PRODUCTS, type SubscriptionTier } from '@/lib/stripe';
+import { logger } from '@/lib/logger';
+
+interface SubscribeRequest {
+  priceId: string;
+  tier: SubscriptionTier;
+}
 
 export async function POST(request: Request) {
   try {
@@ -11,111 +17,83 @@ export async function POST(request: Request) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) {
+    if (!user || !user.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { package_id } = await request.json();
+    const body: SubscribeRequest = await request.json();
+    const { priceId, tier } = body;
 
-    if (!package_id) {
-      return NextResponse.json({ error: 'Package ID required' }, { status: 400 });
+    // Validate the tier exists
+    if (!tier || !(tier in STRIPE_PRODUCTS.subscriptions)) {
+      return NextResponse.json({ error: 'Invalid subscription tier' }, { status: 400 });
     }
 
-    // Get package
-    const { data: pkg, error: pkgError } = await supabase
-      .from('packages')
-      .select('*')
-      .eq('id', package_id)
-      .eq('is_active', true)
-      .single();
-
-    if (pkgError || !pkg) {
-      return NextResponse.json({ error: 'Package not found' }, { status: 404 });
+    // Validate the priceId matches the tier
+    const expectedProduct = STRIPE_PRODUCTS.subscriptions[tier];
+    if (priceId !== expectedProduct.priceId) {
+      return NextResponse.json({ error: 'Price ID does not match tier' }, { status: 400 });
     }
 
-    // Check if user already has active subscription
+    // Check if user already has an active subscription
     const { data: existingSub } = await supabase
       .from('subscriptions')
-      .select('id')
+      .select('id, status')
       .eq('parent_id', user.id)
-      .eq('status', 'active')
+      .in('status', ['active', 'past_due'])
       .single();
 
     if (existingSub) {
-      return NextResponse.json({ error: 'You already have an active subscription' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'You already have an active subscription. Manage it from the billing portal.' },
+        { status: 400 }
+      );
     }
 
-    // For recurring packages, create subscription checkout
-    if (pkg.is_recurring) {
-      // Create or get Stripe Price
-      let priceId = pkg.stripe_price_id;
+    // Get or create Stripe customer
+    const customerId = await getOrCreateStripeCustomer(user.id, user.email);
 
-      if (!priceId) {
-        // Create a price in Stripe
-        const price = await stripe.prices.create({
-          currency: 'usd',
-          unit_amount: pkg.price_cents,
-          recurring: { interval: 'month' },
-          product_data: {
-            name: pkg.name,
-            metadata: { package_id: pkg.id },
-          },
-        });
-        priceId = price.id;
-
-        // Save price ID back to database
-        await supabase
-          .from('packages')
-          .update({ stripe_price_id: priceId })
-          .eq('id', pkg.id);
-      }
-
-      // Create subscription checkout session
-      const session = await stripe.checkout.sessions.create({
-        mode: 'subscription',
-        payment_method_types: ['card'],
-        line_items: [{ price: priceId, quantity: 1 }],
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/packages?success=true`,
-        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/packages?cancelled=true`,
-        metadata: {
-          package_id: pkg.id,
-          user_id: user.id,
-          type: 'subscription',
-        },
-        customer_email: user.email,
-      });
-
-      return NextResponse.json({ url: session.url });
-    } else {
-      // For one-time packages (drop-in), create payment checkout
-      const session = await stripe.checkout.sessions.create({
-        mode: 'payment',
-        payment_method_types: ['card'],
-        line_items: [{
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: pkg.name,
-              description: pkg.description || undefined,
-            },
-            unit_amount: pkg.price_cents,
-          },
+    // Create Stripe Checkout Session for subscription
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      customer: customerId,
+      line_items: [
+        {
+          price: priceId,
           quantity: 1,
-        }],
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/packages?success=true`,
-        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/packages?cancelled=true`,
-        metadata: {
-          package_id: pkg.id,
-          user_id: user.id,
-          type: 'one_time_package',
         },
-        customer_email: user.email,
-      });
+      ],
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/packages`,
+      metadata: {
+        type: 'subscription',
+        tier,
+        userId: user.id,
+        sessionsPerWeek: String(expectedProduct.sessionsPerWeek),
+      },
+      subscription_data: {
+        metadata: {
+          tier,
+          userId: user.id,
+          sessionsPerWeek: String(expectedProduct.sessionsPerWeek),
+        },
+      },
+      allow_promotion_codes: true,
+      billing_address_collection: 'auto',
+    });
 
-      return NextResponse.json({ url: session.url });
-    }
+    logger.info('Subscription checkout session created', {
+      userId: user.id,
+      tier,
+      sessionId: session.id,
+    });
+
+    return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error('Subscribe error:', error);
-    return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 });
+    logger.error('Subscribe error:', error);
+    return NextResponse.json(
+      { error: 'Failed to create checkout session' },
+      { status: 500 }
+    );
   }
 }

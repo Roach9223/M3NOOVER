@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { formatAmountForDisplay } from '@/lib/format';
+import { STRIPE_PRODUCTS, type SubscriptionTier } from '@/lib/stripe/products';
 
 export interface ClientData {
   id: string;
   full_name: string | null;
   email: string;
+  stripe_customer_id?: string | null;
   athletes: {
     id: string;
     name: string;
@@ -15,7 +17,16 @@ export interface ClientData {
   }[];
   outstanding_balance: number;
   subscription_status?: string | null;
+  subscription_tier?: SubscriptionTier | null;
+  session_credits?: number;
 }
+
+const TIER_BADGE_COLORS: Record<SubscriptionTier, { bg: string; text: string }> = {
+  starter: { bg: 'bg-slate-500/20', text: 'text-slate-400' },
+  foundation: { bg: 'bg-blue-500/20', text: 'text-blue-400' },
+  competitor: { bg: 'bg-purple-500/20', text: 'text-purple-400' },
+  elite: { bg: 'bg-amber-500/20', text: 'text-amber-400' },
+};
 
 interface ClientRowProps {
   client: ClientData;
@@ -61,20 +72,30 @@ export function ClientRow({ client, onAddNote }: ClientRowProps) {
         {/* Right side */}
         <div className="flex items-center gap-4">
           {/* Status indicators */}
-          <div className="flex items-center gap-2">
-            {client.subscription_status && (
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {/* Subscription Tier Badge */}
+            {client.subscription_tier ? (
               <span
-                className={`text-xs px-2 py-1 rounded-full ${
-                  client.subscription_status === 'active'
-                    ? 'bg-green-500/20 text-green-400'
-                    : 'bg-neutral-500/20 text-neutral-400'
-                }`}
+                className={`text-xs px-2 py-1 rounded-full font-medium ${
+                  TIER_BADGE_COLORS[client.subscription_tier].bg
+                } ${TIER_BADGE_COLORS[client.subscription_tier].text}`}
               >
-                {client.subscription_status === 'active' ? 'Subscribed' : client.subscription_status}
+                {STRIPE_PRODUCTS.subscriptions[client.subscription_tier].name}
+              </span>
+            ) : (
+              <span className="text-xs px-2 py-1 rounded-full bg-neutral-500/20 text-neutral-500">
+                No Plan
               </span>
             )}
+            {/* Session Credits */}
+            {client.session_credits && client.session_credits > 0 && (
+              <span className="text-xs px-2 py-1 rounded-full bg-accent-500/20 text-accent-400">
+                {client.session_credits} credit{client.session_credits !== 1 ? 's' : ''}
+              </span>
+            )}
+            {/* Outstanding Balance */}
             {hasOutstanding && (
-              <span className="text-xs px-2 py-1 rounded-full bg-amber-500/20 text-amber-400">
+              <span className="text-xs px-2 py-1 rounded-full bg-red-500/20 text-red-400">
                 {formatAmountForDisplay(client.outstanding_balance)} due
               </span>
             )}

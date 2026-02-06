@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { ClientList } from '@/components/admin/ClientList';
 import type { ClientData } from '@/components/admin/ClientRow';
+import type { SubscriptionTier } from '@/lib/stripe/products';
 
 export const metadata = {
   title: 'Clients',
@@ -15,6 +16,7 @@ async function getClients(supabase: Awaited<ReturnType<typeof createClient>>): P
       id,
       full_name,
       email,
+      stripe_customer_id,
       athletes(id, name, is_active)
     `)
     .eq('role', 'parent');
@@ -30,10 +32,17 @@ async function getClients(supabase: Awaited<ReturnType<typeof createClient>>): P
     .select('client_id, total_cents, status')
     .in('status', ['draft', 'sent', 'overdue']);
 
-  // Get subscriptions
+  // Get subscriptions with tier info
   const { data: subscriptions } = await supabase
     .from('subscriptions')
-    .select('user_id, status');
+    .select('parent_id, status, tier')
+    .in('status', ['active', 'past_due']);
+
+  // Get session credits per user
+  const { data: sessionCredits } = await supabase
+    .from('session_credits')
+    .select('profile_id, total_sessions, used_sessions')
+    .or('expires_at.is.null,expires_at.gt.now()');
 
   // Map outstanding balances
   const balanceByClient: Record<string, number> = {};
@@ -46,11 +55,31 @@ async function getClients(supabase: Awaited<ReturnType<typeof createClient>>): P
     }
   }
 
-  // Map subscription statuses
-  const subscriptionByUser: Record<string, string> = {};
+  // Map subscription info (tier and status)
+  const subscriptionByUser: Record<string, { status: string; tier: SubscriptionTier | null }> = {};
   if (subscriptions) {
     for (const sub of subscriptions) {
-      subscriptionByUser[sub.user_id] = sub.status;
+      // Only keep the most recent active subscription per user
+      if (!subscriptionByUser[sub.parent_id] || sub.status === 'active') {
+        subscriptionByUser[sub.parent_id] = {
+          status: sub.status,
+          tier: sub.tier as SubscriptionTier | null,
+        };
+      }
+    }
+  }
+
+  // Map session credits (aggregate per user)
+  const creditsByUser: Record<string, number> = {};
+  if (sessionCredits) {
+    for (const credit of sessionCredits) {
+      const remaining = credit.total_sessions - credit.used_sessions;
+      if (remaining > 0) {
+        if (!creditsByUser[credit.profile_id]) {
+          creditsByUser[credit.profile_id] = 0;
+        }
+        creditsByUser[credit.profile_id] += remaining;
+      }
     }
   }
 
@@ -63,9 +92,12 @@ async function getClients(supabase: Awaited<ReturnType<typeof createClient>>): P
     id: profile.id,
     full_name: profile.full_name,
     email: profile.email || '',
+    stripe_customer_id: profile.stripe_customer_id || null,
     athletes: (profile.athletes as { id: string; name: string; is_active: boolean }[]) || [],
     outstanding_balance: balanceByClient[profile.id] || 0,
-    subscription_status: subscriptionByUser[profile.id] || null,
+    subscription_status: subscriptionByUser[profile.id]?.status || null,
+    subscription_tier: subscriptionByUser[profile.id]?.tier || null,
+    session_credits: creditsByUser[profile.id] || 0,
   }));
 }
 

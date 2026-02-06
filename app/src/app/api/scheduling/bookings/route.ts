@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { addMinutes, isBefore } from 'date-fns';
 import { isGoogleCalendarConfigured, syncBookingToCalendar } from '@/lib/google-calendar';
 
@@ -116,6 +117,100 @@ export async function POST(request: Request) {
 
   if (conflicts && conflicts.length >= sessionType.max_athletes) {
     return NextResponse.json({ error: 'This time slot is fully booked' }, { status: 400 });
+  }
+
+  // Get user profile to check role
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  // Check if user is admin (bypass payment validation)
+  if (profile?.role !== 'admin') {
+    // Get active subscription
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('tier, sessions_per_week, status')
+      .eq('parent_id', user.id)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    // Get session credits
+    const { data: credits } = await supabase
+      .from('session_credits')
+      .select('total_sessions, used_sessions')
+      .eq('profile_id', user.id)
+      .or('expires_at.is.null,expires_at.gt.now()');
+
+    const availableCredits = credits?.reduce(
+      (sum, c) => sum + Math.max(0, c.total_sessions - c.used_sessions),
+      0
+    ) || 0;
+
+    let useCredit = false;
+
+    if (subscription) {
+      const sessionsPerWeek = subscription.sessions_per_week;
+
+      // Check weekly usage if not unlimited
+      if (sessionsPerWeek !== null && sessionsPerWeek !== -1) {
+        const startOfWeek = new Date();
+        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        const { data: weeklyBookings } = await supabase
+          .from('bookings')
+          .select('id')
+          .eq('parent_id', user.id)
+          .gte('start_time', startOfWeek.toISOString())
+          .in('status', ['confirmed', 'pending', 'completed']);
+
+        const sessionsUsedThisWeek = weeklyBookings?.length || 0;
+
+        if (sessionsUsedThisWeek >= sessionsPerWeek) {
+          // Check if they have credits to use
+          if (availableCredits > 0) {
+            useCredit = true;
+          } else {
+            return NextResponse.json(
+              { error: 'Weekly session limit reached. Purchase additional credits or wait until next week.' },
+              { status: 400 }
+            );
+          }
+        }
+      }
+    } else {
+      // No subscription - must use credits
+      if (availableCredits > 0) {
+        useCredit = true;
+      } else {
+        return NextResponse.json(
+          { error: 'You need an active subscription or session credits to book.' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Decrement session credit if needed
+    if (useCredit) {
+      const supabaseAdmin = createAdminClient();
+
+      // Use the database function to decrement credits
+      const { data: creditUsed, error: creditError } = await supabaseAdmin.rpc(
+        'use_session_credit',
+        { user_id: user.id }
+      );
+
+      if (creditError || !creditUsed) {
+        return NextResponse.json(
+          { error: 'Failed to use session credit. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
   }
 
   // Create booking

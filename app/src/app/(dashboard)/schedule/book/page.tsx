@@ -8,6 +8,8 @@ import { SessionTypeSelector, TimeSlotPicker } from '@/components/scheduling';
 import { formatAmountForDisplay } from '@/lib/format';
 import { format } from 'date-fns';
 import type { SessionType, TimeSlot } from '@/types/scheduling';
+import type { BookingEligibility } from '@/app/api/booking-eligibility/route';
+import { STRIPE_PRODUCTS } from '@/lib/stripe/products';
 
 type BookingStep = 'type' | 'time' | 'confirm';
 
@@ -20,23 +22,34 @@ export default function BookSessionPage() {
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [eligibility, setEligibility] = useState<BookingEligibility | null>(null);
 
   useEffect(() => {
-    async function fetchSessionTypes() {
+    async function fetchData() {
       try {
-        const res = await fetch('/api/scheduling/session-types');
-        if (res.ok) {
-          const data = await res.json();
+        // Fetch eligibility and session types in parallel
+        const [eligibilityRes, typesRes] = await Promise.all([
+          fetch('/api/booking-eligibility'),
+          fetch('/api/scheduling/session-types'),
+        ]);
+
+        if (eligibilityRes.ok) {
+          const data = await eligibilityRes.json();
+          setEligibility(data);
+        }
+
+        if (typesRes.ok) {
+          const data = await typesRes.json();
           setSessionTypes(data);
         }
       } catch (error) {
-        console.error('Failed to fetch session types:', error);
+        console.error('Failed to fetch data:', error);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchSessionTypes();
+    fetchData();
   }, []);
 
   const handleTypeSelect = (type: SessionType) => {
@@ -87,6 +100,82 @@ export default function BookSessionPage() {
     );
   }
 
+  // User cannot book - show message and redirect to packages
+  if (eligibility && !eligibility.canBook) {
+    return (
+      <div className="max-w-2xl mx-auto text-center py-12">
+        <div className="w-16 h-16 mx-auto mb-6 bg-amber-500/20 rounded-full flex items-center justify-center">
+          <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-bold text-white mb-3">Unable to Book</h2>
+        <p className="text-neutral-400 mb-8 max-w-md mx-auto">
+          {eligibility.reason}
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link href="/packages">
+            <Button variant="primary">View Training Plans</Button>
+          </Link>
+          <Link href="/schedule">
+            <Button variant="outline">Back to Schedule</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Show booking status info
+  const getBookingStatusInfo = () => {
+    if (!eligibility) return null;
+
+    if (eligibility.subscription) {
+      const { tier, sessionsPerWeek, sessionsRemaining } = eligibility.subscription;
+      const planName = STRIPE_PRODUCTS.subscriptions[tier].name;
+
+      if (sessionsPerWeek === null || sessionsRemaining === null) {
+        return (
+          <div className="p-4 bg-accent-500/10 border border-accent-500/30 rounded-xl mb-6">
+            <p className="text-accent-400 font-medium">{planName} - Unlimited Sessions</p>
+          </div>
+        );
+      }
+
+      if (sessionsRemaining > 0) {
+        return (
+          <div className="p-4 bg-accent-500/10 border border-accent-500/30 rounded-xl mb-6">
+            <p className="text-accent-400 font-medium">
+              {planName} - {sessionsRemaining} of {sessionsPerWeek} sessions remaining this week
+            </p>
+          </div>
+        );
+      }
+
+      // Using credits because subscription limit reached
+      if (eligibility.sessionCredits) {
+        return (
+          <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl mb-6">
+            <p className="text-amber-400 font-medium">
+              Weekly {planName} limit reached. This booking will use 1 of your {eligibility.sessionCredits.available} session credits.
+            </p>
+          </div>
+        );
+      }
+    }
+
+    if (eligibility.sessionCredits) {
+      return (
+        <div className="p-4 bg-accent-500/10 border border-accent-500/30 rounded-xl mb-6">
+          <p className="text-accent-400 font-medium">
+            Using Session Credits - {eligibility.sessionCredits.available} available
+          </p>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}
@@ -122,6 +211,9 @@ export default function BookSessionPage() {
           />
         ))}
       </div>
+
+      {/* Booking Status Info */}
+      {getBookingStatusInfo()}
 
       {/* Step 1: Select Type */}
       {step === 'type' && (

@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
   full_name TEXT,
+  phone TEXT,
   role TEXT NOT NULL DEFAULT 'parent' CHECK (role IN ('parent', 'admin')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -28,11 +29,12 @@ CREATE INDEX IF NOT EXISTS idx_profiles_role ON profiles(role);
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, email, full_name, role)
+  INSERT INTO public.profiles (id, email, full_name, phone, role)
   VALUES (
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
+    NEW.raw_user_meta_data->>'phone',
     COALESCE(NEW.raw_user_meta_data->>'role', 'parent')
   );
   RETURN NEW;

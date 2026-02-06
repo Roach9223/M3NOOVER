@@ -1,5 +1,9 @@
 'use client';
 
+import { STRIPE_PRODUCTS, type SubscriptionTier } from '@/lib/stripe/products';
+
+export type PlanFilter = 'all' | 'no_plan' | 'has_credits' | SubscriptionTier;
+
 interface ClientListFiltersProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
@@ -7,7 +11,11 @@ interface ClientListFiltersProps {
   onStatusChange: (status: 'all' | 'active' | 'inactive') => void;
   balanceFilter: 'all' | 'outstanding' | 'clear';
   onBalanceChange: (balance: 'all' | 'outstanding' | 'clear') => void;
+  planFilter: PlanFilter;
+  onPlanChange: (plan: PlanFilter) => void;
 }
+
+const TIER_ORDER: SubscriptionTier[] = ['starter', 'foundation', 'competitor', 'elite'];
 
 export function ClientListFilters({
   searchQuery,
@@ -16,6 +24,8 @@ export function ClientListFilters({
   onStatusChange,
   balanceFilter,
   onBalanceChange,
+  planFilter,
+  onPlanChange,
 }: ClientListFiltersProps) {
   return (
     <div className="space-y-4">
@@ -82,6 +92,22 @@ export function ClientListFilters({
             </button>
           ))}
         </div>
+
+        {/* Plan filter dropdown */}
+        <select
+          value={planFilter}
+          onChange={(e) => onPlanChange(e.target.value as PlanFilter)}
+          className="px-3 py-1.5 text-sm font-medium bg-charcoal-800 border border-charcoal-700 rounded-lg text-neutral-300 focus:outline-none focus:ring-2 focus:ring-accent-500"
+        >
+          <option value="all">All Plans</option>
+          <option value="no_plan">No Plan</option>
+          <option value="has_credits">Has Credits</option>
+          {TIER_ORDER.map((tier) => (
+            <option key={tier} value={tier}>
+              {STRIPE_PRODUCTS.subscriptions[tier].name}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );

@@ -1,18 +1,18 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-import { stripe } from '@/lib/stripe';
-import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
+import { stripe, STRIPE_PRODUCTS, type SubscriptionTier } from '@/lib/stripe';
 import { logger } from '@/lib/logger';
 
 // Use service role for webhook operations (bypasses RLS)
-// Only create client if environment variables are available
-const supabaseAdmin = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
-  ? createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    )
-  : null;
+const supabaseAdmin =
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+      )
+    : null;
 
 export async function POST(request: Request) {
   if (!stripe || !supabaseAdmin) {
@@ -52,22 +52,27 @@ export async function POST(request: Request) {
         break;
       }
 
-      case 'customer.subscription.created':
+      case 'invoice.paid': {
+        const invoice = event.data.object as Stripe.Invoice;
+        await handleInvoicePaid(invoice);
+        break;
+      }
+
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice;
+        await handleInvoicePaymentFailed(invoice);
+        break;
+      }
+
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
-        await handleSubscriptionUpdate(subscription);
+        await handleSubscriptionUpdated(subscription);
         break;
       }
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription;
         await handleSubscriptionDeleted(subscription);
-        break;
-      }
-
-      case 'invoice.paid': {
-        const invoice = event.data.object as Stripe.Invoice;
-        await handleInvoicePaid(invoice);
         break;
       }
 
@@ -82,18 +87,119 @@ export async function POST(request: Request) {
   }
 }
 
+/**
+ * Handle checkout.session.completed
+ * Creates subscription or session_credits record
+ */
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  if (!supabaseAdmin) return;
+  if (!supabaseAdmin || !stripe) return;
 
   const metadata = session.metadata;
+  const userId = metadata?.userId;
 
-  if (metadata?.type === 'invoice_payment' && metadata.invoice_id) {
-    // Mark invoice as paid
+  if (!userId) {
+    logger.warn('Checkout completed without userId in metadata', { sessionId: session.id });
+    return;
+  }
+
+  // Handle subscription checkout
+  if (session.mode === 'subscription' && metadata?.type === 'subscription') {
+    const tier = metadata.tier as SubscriptionTier;
+    const subscriptionId = session.subscription as string;
+
+    if (!subscriptionId) {
+      logger.warn('No subscription ID in checkout session');
+      return;
+    }
+
+    // Fetch full subscription from Stripe
+    const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const priceId = stripeSubscription.items.data[0]?.price.id;
+
+    // Get sessions per week from the product config
+    const productConfig = tier ? STRIPE_PRODUCTS.subscriptions[tier] : null;
+    const sessionsPerWeek = productConfig?.sessionsPerWeek ?? null;
+
+    // Check if record exists
+    const { data: existingSub } = await supabaseAdmin
+      .from('subscriptions')
+      .select('id')
+      .eq('stripe_subscription_id', subscriptionId)
+      .single();
+
+    // Type assertion for subscription period dates
+    const subWithPeriod = stripeSubscription as unknown as {
+      current_period_start: number;
+      current_period_end: number;
+      cancel_at_period_end: boolean;
+      status: Stripe.Subscription.Status;
+    };
+
+    const subData = {
+      parent_id: userId,
+      stripe_subscription_id: subscriptionId,
+      stripe_customer_id: session.customer as string,
+      stripe_price_id: priceId,
+      tier,
+      status: mapStripeStatus(subWithPeriod.status),
+      sessions_per_week: sessionsPerWeek === -1 ? null : sessionsPerWeek,
+      current_period_start: new Date(subWithPeriod.current_period_start * 1000).toISOString(),
+      current_period_end: new Date(subWithPeriod.current_period_end * 1000).toISOString(),
+      cancel_at_period_end: subWithPeriod.cancel_at_period_end,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (existingSub) {
+      await supabaseAdmin
+        .from('subscriptions')
+        .update(subData)
+        .eq('id', existingSub.id);
+    } else {
+      await supabaseAdmin.from('subscriptions').insert({
+        ...subData,
+        created_at: new Date().toISOString(),
+      });
+    }
+
+    logger.info('Subscription created from checkout', { subscriptionId, tier, userId });
+  }
+
+  // Handle session pack (one-time payment) checkout
+  if (session.mode === 'payment' && metadata?.type === 'session_pack') {
+    const productType = metadata.productType;
+    const sessions = parseInt(metadata.sessions || '0', 10);
+    const priceCents = parseInt(metadata.priceCents || '0', 10);
+    const paymentIntentId = session.payment_intent as string;
+
+    if (sessions <= 0) {
+      logger.warn('Invalid session count in checkout metadata');
+      return;
+    }
+
+    // Create session_credits record
+    await supabaseAdmin.from('session_credits').insert({
+      profile_id: userId,
+      total_sessions: sessions,
+      used_sessions: 0,
+      stripe_payment_intent_id: paymentIntentId,
+      stripe_checkout_session_id: session.id,
+      product_type: productType,
+      price_cents: priceCents,
+      purchased_at: new Date().toISOString(),
+      expires_at: null, // No expiry for now
+    });
+
+    logger.info('Session credits created', { userId, sessions, productType });
+  }
+
+  // Handle invoice payment (legacy support)
+  if (session.mode === 'payment' && metadata?.type === 'invoice_payment' && metadata.invoice_id) {
     await supabaseAdmin
       .from('invoices')
       .update({
         status: 'paid',
         stripe_payment_intent_id: session.payment_intent as string,
+        stripe_checkout_session_id: session.id,
         paid_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
@@ -101,85 +207,126 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
     logger.info('Invoice marked as paid', { invoiceId: metadata.invoice_id });
   }
+}
 
-  if (metadata?.type === 'subscription' && metadata.package_id && metadata.user_id) {
-    // Subscription will be handled by subscription.created event
-    logger.info('Subscription checkout completed', { packageId: metadata.package_id });
+/**
+ * Handle invoice.paid
+ * Updates subscription period dates
+ */
+async function handleInvoicePaid(invoice: Stripe.Invoice) {
+  if (!supabaseAdmin) return;
+
+  // Type assertion for invoice with subscription
+  const invoiceWithSub = invoice as unknown as { subscription?: string | null };
+  const subscriptionId = invoiceWithSub.subscription;
+
+  if (!subscriptionId) {
+    return; // Not a subscription invoice
   }
 
-  if (metadata?.type === 'one_time_package' && metadata.package_id && metadata.user_id) {
-    // Log one-time package purchase (could create a sessions credit record)
-    logger.info('One-time package purchased', { packageId: metadata.package_id });
+  // Get the subscription lines to extract period info
+  const lineItem = invoice.lines.data.find((line) => {
+    const lineWithType = line as unknown as { type?: string };
+    return lineWithType.type === 'subscription';
+  });
+
+  if (lineItem?.period) {
+    await supabaseAdmin
+      .from('subscriptions')
+      .update({
+        current_period_start: new Date(lineItem.period.start * 1000).toISOString(),
+        current_period_end: new Date(lineItem.period.end * 1000).toISOString(),
+        status: 'active',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('stripe_subscription_id', subscriptionId);
+
+    logger.info('Subscription period updated from invoice', { subscriptionId });
   }
 }
 
-async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
-  if (!stripe || !supabaseAdmin) return;
+/**
+ * Handle invoice.payment_failed
+ * Updates subscription status to past_due
+ */
+async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
+  if (!supabaseAdmin) return;
 
-  const packageId = subscription.metadata?.package_id;
-  const customerId = subscription.customer as string;
+  // Type assertion for invoice with subscription
+  const invoiceWithSub = invoice as unknown as { subscription?: string | null };
+  const subscriptionId = invoiceWithSub.subscription;
 
-  // Get user email from customer
-  const customer = await stripe.customers.retrieve(customerId);
-  if (customer.deleted) return;
-
-  const email = customer.email;
-  if (!email) return;
-
-  // Find user by email
-  const { data: profile } = await supabaseAdmin
-    .from('profiles')
-    .select('id')
-    .eq('id', (await supabaseAdmin.auth.admin.listUsers()).data.users.find(u => u.email === email)?.id || '')
-    .single();
-
-  if (!profile) {
-    logger.warn('Could not find profile for customer');
+  if (!subscriptionId) {
     return;
   }
 
-  // Check if subscription record exists
-  const { data: existingSub } = await supabaseAdmin
+  await supabaseAdmin
     .from('subscriptions')
-    .select('id')
-    .eq('stripe_subscription_id', subscription.id)
-    .single();
+    .update({
+      status: 'past_due',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('stripe_subscription_id', subscriptionId);
 
-  // Get period dates from subscription items or subscription itself
-  const subAny = subscription as unknown as {
-    current_period_start?: number;
-    current_period_end?: number;
-  };
+  logger.info('Subscription marked as past_due', { subscriptionId });
 
-  const subData = {
-    parent_id: profile.id,
-    package_id: packageId,
-    stripe_subscription_id: subscription.id,
-    stripe_customer_id: customerId,
-    status: mapStripeStatus(subscription.status),
-    current_period_start: subAny.current_period_start
-      ? new Date(subAny.current_period_start * 1000).toISOString()
-      : null,
-    current_period_end: subAny.current_period_end
-      ? new Date(subAny.current_period_end * 1000).toISOString()
-      : null,
-    updated_at: new Date().toISOString(),
-  };
-
-  if (existingSub) {
-    await supabaseAdmin
-      .from('subscriptions')
-      .update(subData)
-      .eq('id', existingSub.id);
-  } else {
-    await supabaseAdmin
-      .from('subscriptions')
-      .insert(subData);
-  }
-
-  logger.info('Subscription updated');
+  // TODO: Send notification email via Resend
+  // const { data: sub } = await supabaseAdmin
+  //   .from('subscriptions')
+  //   .select('parent_id, profiles(email, full_name)')
+  //   .eq('stripe_subscription_id', subscriptionId)
+  //   .single();
+  // if (sub?.profiles?.email) {
+  //   await sendPaymentFailedEmail(sub.profiles.email, sub.profiles.full_name);
+  // }
 }
 
+/**
+ * Handle customer.subscription.updated
+ * Syncs subscription status, period, and cancel_at_period_end
+ */
+async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+  if (!supabaseAdmin) return;
+
+  const tier = subscription.metadata?.tier as SubscriptionTier | undefined;
+  const priceId = subscription.items.data[0]?.price.id;
+
+  const productConfig = tier ? STRIPE_PRODUCTS.subscriptions[tier] : null;
+  const sessionsPerWeek = productConfig?.sessionsPerWeek ?? null;
+
+  // Type assertion for subscription period dates
+  const subWithPeriod = subscription as unknown as {
+    current_period_start: number;
+    current_period_end: number;
+    cancel_at_period_end: boolean;
+    status: Stripe.Subscription.Status;
+  };
+
+  await supabaseAdmin
+    .from('subscriptions')
+    .update({
+      stripe_price_id: priceId,
+      tier: tier || null,
+      status: mapStripeStatus(subWithPeriod.status),
+      sessions_per_week: sessionsPerWeek === -1 ? null : sessionsPerWeek,
+      current_period_start: new Date(subWithPeriod.current_period_start * 1000).toISOString(),
+      current_period_end: new Date(subWithPeriod.current_period_end * 1000).toISOString(),
+      cancel_at_period_end: subWithPeriod.cancel_at_period_end,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('stripe_subscription_id', subscription.id);
+
+  logger.info('Subscription updated', {
+    subscriptionId: subscription.id,
+    status: subWithPeriod.status,
+    cancelAtPeriodEnd: subWithPeriod.cancel_at_period_end,
+  });
+}
+
+/**
+ * Handle customer.subscription.deleted
+ * Sets subscription status to canceled
+ */
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   if (!supabaseAdmin) return;
 
@@ -187,22 +334,17 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     .from('subscriptions')
     .update({
       status: 'cancelled',
+      cancelled_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
     .eq('stripe_subscription_id', subscription.id);
 
-  logger.info('Subscription cancelled');
+  logger.info('Subscription cancelled', { subscriptionId: subscription.id });
 }
 
-async function handleInvoicePaid(invoice: Stripe.Invoice) {
-  // This handles Stripe's own invoices for subscriptions
-  // Cast to access subscription property which may exist on invoice
-  const invoiceAny = invoice as unknown as { subscription?: string | null };
-  if (invoiceAny.subscription) {
-    logger.info('Subscription invoice paid');
-  }
-}
-
+/**
+ * Map Stripe subscription status to our status enum
+ */
 function mapStripeStatus(status: Stripe.Subscription.Status): string {
   const statusMap: Record<string, string> = {
     active: 'active',

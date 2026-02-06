@@ -10,7 +10,12 @@
     "build:app": "pnpm --filter @m3noover/app build",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
-    "clean": "pnpm -r clean"
+    "clean": "pnpm -r clean",
+    "fetch-stripe-prices": "tsx scripts/fetch-stripe-prices.ts"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5",
+    "tsx": "^4.19.0"
   },
   "keywords": [
     "fitness",

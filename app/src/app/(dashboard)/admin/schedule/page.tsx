@@ -107,6 +107,9 @@ export default function AdminSchedulePage() {
           <p className="text-neutral-400 mt-1">View and manage all booked sessions</p>
         </div>
         <div className="flex gap-3">
+          <Link href="/admin/schedule/quick-book">
+            <Button variant="primary">Quick Book</Button>
+          </Link>
           <Link href="/admin/schedule/availability">
             <Button variant="outline">Manage Availability</Button>
           </Link>

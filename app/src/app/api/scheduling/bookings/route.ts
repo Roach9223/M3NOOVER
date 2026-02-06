@@ -4,6 +4,8 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { addMinutes, isBefore } from 'date-fns';
 import { isGoogleCalendarConfigured, syncBookingToCalendar } from '@/lib/google-calendar';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   const supabase = await createClient();
 

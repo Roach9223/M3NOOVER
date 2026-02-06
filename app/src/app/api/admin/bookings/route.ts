@@ -4,6 +4,8 @@ import { addMinutes } from 'date-fns';
 import { isGoogleCalendarConfigured, syncBookingToCalendar } from '@/lib/google-calendar';
 import { logger } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
 interface AdminBookingRequest {
   parent_id: string;
   athlete_id?: string;

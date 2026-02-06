@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import type { CreateInvoiceInput } from '@/types/payment';
 
+export const dynamic = 'force-dynamic';
+
 // GET: List invoices (admin sees all, parent sees own)
 export async function GET() {
   try {

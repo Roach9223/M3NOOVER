@@ -5,6 +5,8 @@ import { createClient } from '@supabase/supabase-js';
 import { stripe, STRIPE_PRODUCTS, type SubscriptionTier } from '@/lib/stripe';
 import { logger } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
 // Use service role for webhook operations (bypasses RLS)
 const supabaseAdmin =
   process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY

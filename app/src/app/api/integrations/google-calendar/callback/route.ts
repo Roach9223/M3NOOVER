@@ -9,6 +9,8 @@ import {
 } from '@/lib/google-calendar';
 import { logger } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');

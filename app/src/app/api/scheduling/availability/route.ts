@@ -4,6 +4,8 @@ import { addDays, format, parse, setHours, setMinutes, isBefore, isAfter, startO
 import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 import type { TimeSlot } from '@/types/scheduling';
 
+export const dynamic = 'force-dynamic';
+
 const TIMEZONE = 'America/Los_Angeles';
 
 export async function GET(request: Request) {

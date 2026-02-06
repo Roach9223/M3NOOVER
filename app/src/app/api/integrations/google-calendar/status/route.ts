@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { isGoogleCalendarConfigured, getStoredIntegration } from '@/lib/google-calendar';
 import type { GoogleCalendarStatus } from '@/types/integrations';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const supabase = await createClient();
 

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { differenceInDays, parseISO, startOfDay } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/athletes/[id]/stats - Get athlete statistics
 export async function GET(
   request: Request,

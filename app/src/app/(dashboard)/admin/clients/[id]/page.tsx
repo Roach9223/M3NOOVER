@@ -5,6 +5,8 @@ import { Button } from '@m3noover/ui';
 import { formatAmountForDisplay } from '@/lib/format';
 import { STRIPE_PRODUCTS, type SubscriptionTier } from '@/lib/stripe/products';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Client Details',
 };

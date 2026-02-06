@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ClientOnboardingWizard } from '@/components/admin/ClientOnboardingWizard';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Add Client',
 };

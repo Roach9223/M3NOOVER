@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { stripe, getOrCreateStripeCustomer, STRIPE_PRODUCTS, type OneTimePurchase } from '@/lib/stripe';
 import { logger } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
 type SessionPackType = 'drop_in' | 'five_pack' | 'ten_pack';
 
 // Map API type to STRIPE_PRODUCTS key

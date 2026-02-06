@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { STRIPE_PRODUCTS, type SubscriptionTier } from '@/lib/stripe/products';
 
+export const dynamic = 'force-dynamic';
+
 export interface DashboardStats {
   revenueThisMonth: number;
   mrr: number;

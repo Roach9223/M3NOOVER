@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { InvoiceForm } from '@/components/admin/InvoiceForm';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Create Invoice',
 };

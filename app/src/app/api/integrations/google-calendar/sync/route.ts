@@ -7,6 +7,8 @@ import {
 } from '@/lib/google-calendar';
 import type { SyncResult } from '@/types/integrations';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST() {
   const supabase = await createClient();
 

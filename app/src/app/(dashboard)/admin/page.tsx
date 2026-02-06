@@ -5,6 +5,8 @@ import type { SessionData } from '@/components/admin/SessionRow';
 import type { ActivityItem } from '@/app/api/admin/recent-activity/route';
 import { STRIPE_PRODUCTS, type SubscriptionTier } from '@/lib/stripe/products';
 
+export const dynamic = 'force-dynamic';
+
 export interface DashboardStats {
   revenueThisMonth: number;
   mrr: number;

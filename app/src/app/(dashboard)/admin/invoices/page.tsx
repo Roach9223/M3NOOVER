@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { Button } from '@m3noover/ui';
 import { InvoiceTable } from '@/components/admin/InvoiceTable';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Invoices',
 };

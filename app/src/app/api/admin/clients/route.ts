@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { logger } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
 function escapeHtml(text: string): string {
   const map: Record<string, string> = {
     '&': '&amp;',

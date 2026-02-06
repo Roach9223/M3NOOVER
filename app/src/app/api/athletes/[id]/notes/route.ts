@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/athletes/[id]/notes - Get all session notes for an athlete
 export async function GET(
   request: Request,

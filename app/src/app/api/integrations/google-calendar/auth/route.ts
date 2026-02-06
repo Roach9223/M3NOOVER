@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { getAuthUrl, isGoogleCalendarConfigured } from '@/lib/google-calendar';
 import crypto from 'crypto';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   // Check if Google Calendar is configured
   if (!isGoogleCalendarConfigured()) {

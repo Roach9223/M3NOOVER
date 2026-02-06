@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/session-notes - List session notes (admin only, or filtered by athlete)
 export async function GET(request: Request) {
   const supabase = await createClient();

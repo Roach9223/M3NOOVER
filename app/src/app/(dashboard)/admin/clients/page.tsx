@@ -4,6 +4,8 @@ import { ClientList } from '@/components/admin/ClientList';
 import type { ClientData } from '@/components/admin/ClientRow';
 import type { SubscriptionTier } from '@/lib/stripe/products';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Clients',
 };

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { STRIPE_PRODUCTS, type SubscriptionTier } from '@/lib/stripe/products';
 
+export const dynamic = 'force-dynamic';
+
 export interface BookingEligibility {
   canBook: boolean;
   reason?: string;

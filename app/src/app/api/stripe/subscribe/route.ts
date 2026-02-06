@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { stripe, getOrCreateStripeCustomer, STRIPE_PRODUCTS, type SubscriptionTier } from '@/lib/stripe';
 import { logger } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
 interface SubscribeRequest {
   priceId: string;
   tier: SubscriptionTier;

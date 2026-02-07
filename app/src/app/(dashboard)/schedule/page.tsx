@@ -4,28 +4,47 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@m3noover/ui';
 import { BookingCard } from '@/components/scheduling';
+import { STRIPE_PRODUCTS, type SubscriptionTier } from '@/lib/stripe/products';
 import type { Booking } from '@/types/scheduling';
+
+interface SubscriptionInfo {
+  hasActive: boolean;
+  tierName: string | null;
+}
 
 export default function SchedulePage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [subscription, setSubscription] = useState<SubscriptionInfo>({ hasActive: false, tierName: null });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchBookings() {
+    async function fetchData() {
       try {
-        const res = await fetch('/api/scheduling/bookings');
-        if (res.ok) {
-          const data = await res.json();
-          setBookings(data);
+        const [bookingsRes, subscriptionRes] = await Promise.all([
+          fetch('/api/scheduling/bookings'),
+          fetch('/api/subscriptions/current'),
+        ]);
+
+        if (bookingsRes.ok) {
+          setBookings(await bookingsRes.json());
+        }
+
+        if (subscriptionRes.ok) {
+          const subData = await subscriptionRes.json();
+          if (subData && subData.status === 'active') {
+            const tierKey = subData.tier as SubscriptionTier | undefined;
+            const tierName = tierKey ? STRIPE_PRODUCTS.subscriptions[tierKey]?.name : null;
+            setSubscription({ hasActive: true, tierName });
+          }
         }
       } catch (error) {
-        console.error('Failed to fetch bookings:', error);
+        console.error('Failed to fetch data:', error);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchBookings();
+    fetchData();
   }, []);
 
   const handleCancel = async (bookingId: string) => {
@@ -94,6 +113,8 @@ export default function SchedulePage() {
                     key={booking.id}
                     booking={booking}
                     onCancel={() => handleCancel(booking.id)}
+                    hasActiveSubscription={subscription.hasActive}
+                    subscriptionTierName={subscription.tierName || undefined}
                   />
                 ))}
               </div>
@@ -110,6 +131,8 @@ export default function SchedulePage() {
                     key={booking.id}
                     booking={booking}
                     showCancelButton={false}
+                    hasActiveSubscription={subscription.hasActive}
+                    subscriptionTierName={subscription.tierName || undefined}
                   />
                 ))}
               </div>

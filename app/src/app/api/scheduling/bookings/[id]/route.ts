@@ -198,7 +198,6 @@ export async function DELETE(
       cancelled_by: user.id,
       cancellation_reason: body.reason || null,
       updated_at: new Date().toISOString(),
-      google_sync_status: 'not_applicable',
     })
     .eq('id', id);
 

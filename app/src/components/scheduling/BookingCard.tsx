@@ -10,6 +10,8 @@ interface BookingCardProps {
   booking: Booking;
   showCancelButton?: boolean;
   onCancel?: () => void;
+  hasActiveSubscription?: boolean;
+  subscriptionTierName?: string;
 }
 
 const statusColors: Record<string, string> = {
@@ -20,7 +22,13 @@ const statusColors: Record<string, string> = {
   no_show: 'bg-neutral-500/10 text-neutral-400',
 };
 
-export function BookingCard({ booking, showCancelButton = true, onCancel }: BookingCardProps) {
+export function BookingCard({
+  booking,
+  showCancelButton = true,
+  onCancel,
+  hasActiveSubscription = false,
+  subscriptionTierName,
+}: BookingCardProps) {
   const [isCancelling, setIsCancelling] = useState(false);
 
   const handleCancel = async () => {
@@ -98,10 +106,16 @@ export function BookingCard({ booking, showCancelButton = true, onCancel }: Book
         </div>
 
         <div className="text-right">
-          {booking.session_type?.price_cents && (
-            <p className="text-xl font-bold text-white">
-              {formatAmountForDisplay(booking.session_type.price_cents)}
+          {hasActiveSubscription ? (
+            <p className="text-sm font-medium text-green-400">
+              Included with {subscriptionTierName || 'Subscription'}
             </p>
+          ) : (
+            booking.session_type?.price_cents && (
+              <p className="text-xl font-bold text-white">
+                {formatAmountForDisplay(booking.session_type.price_cents)}
+              </p>
+            )
           )}
 
           {showCancelButton && canCancel && (

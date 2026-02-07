@@ -1,6 +1,7 @@
 'use client';
 
 import { formatAmountForDisplay } from '@/lib/format';
+import { STRIPE_PRODUCTS, type SubscriptionTier } from '@/lib/stripe/products';
 import type { Subscription } from '@/types/payment';
 
 interface SubscriptionTableProps {
@@ -49,18 +50,37 @@ export function SubscriptionTable({ subscriptions }: SubscriptionTableProps) {
                   </p>
                 </td>
                 <td className="px-6 py-4">
-                  <p className="text-white">{sub.package?.name || 'Unknown'}</p>
-                  {sub.package?.sessions_per_week && (
-                    <p className="text-sm text-neutral-500">
-                      {sub.package.sessions_per_week}x/week
-                    </p>
-                  )}
+                  {(() => {
+                    const tierKey = sub.tier as SubscriptionTier | undefined;
+                    const product = tierKey ? STRIPE_PRODUCTS.subscriptions[tierKey] : null;
+                    const sessionsPerWeek = sub.sessions_per_week ?? product?.sessionsPerWeek;
+                    return (
+                      <>
+                        <p className="text-white">{product?.name || sub.package?.name || 'Unknown'}</p>
+                        {sessionsPerWeek !== null && sessionsPerWeek !== undefined && sessionsPerWeek > 0 && (
+                          <p className="text-sm text-neutral-500">
+                            {sessionsPerWeek}x/week
+                          </p>
+                        )}
+                        {sessionsPerWeek === -1 && (
+                          <p className="text-sm text-neutral-500">Unlimited</p>
+                        )}
+                      </>
+                    );
+                  })()}
                 </td>
                 <td className="px-6 py-4">
-                  <p className="text-white font-semibold">
-                    {sub.package ? formatAmountForDisplay(sub.package.price_cents) : '—'}
-                    <span className="text-neutral-500 font-normal">/mo</span>
-                  </p>
+                  {(() => {
+                    const tierKey = sub.tier as SubscriptionTier | undefined;
+                    const product = tierKey ? STRIPE_PRODUCTS.subscriptions[tierKey] : null;
+                    const price = product?.price ?? sub.package?.price_cents;
+                    return (
+                      <p className="text-white font-semibold">
+                        {price ? formatAmountForDisplay(price) : '—'}
+                        <span className="text-neutral-500 font-normal">/mo</span>
+                      </p>
+                    );
+                  })()}
                 </td>
                 <td className="px-6 py-4">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${statusColors[sub.status]}`}>

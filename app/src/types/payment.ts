@@ -42,7 +42,9 @@ export interface InvoiceItem {
 export interface Subscription {
   id: string;
   parent_id: string;
-  package_id: string;
+  package_id?: string;
+  tier?: string;
+  sessions_per_week?: number | null;
   stripe_subscription_id: string | null;
   stripe_customer_id: string | null;
   status: SubscriptionStatus;

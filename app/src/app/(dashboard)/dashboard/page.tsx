@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { BookingCTA } from '@/components/dashboard/BookingCTA';
 import { BookingFAB } from '@/components/dashboard/BookingFAB';
+import { OnboardingView } from '@/components/dashboard/OnboardingView';
 import { type SubscriptionTier } from '@/lib/stripe/products';
 
 export const dynamic = 'force-dynamic';
@@ -94,13 +96,23 @@ function getStartOfWeek(): Date {
   return monday;
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ skip_onboarding?: string }>;
+}) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     return null;
   }
+
+  // Check for skip_onboarding parameter or cookie
+  const params = await searchParams;
+  const skipOnboarding = params.skip_onboarding === 'true';
+  const cookieStore = await cookies();
+  const onboardingSkippedCookie = cookieStore.get('m3_onboarding_skipped')?.value === 'true';
 
   // Get user profile with role
   const { data: profile } = await supabase
@@ -114,7 +126,7 @@ export default async function DashboardPage() {
     redirect('/admin');
   }
 
-  const firstName = profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || 'there';
+  const firstName = profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || '';
 
   // Fetch parent's athletes
   const { data: athletes } = await supabase
@@ -171,6 +183,28 @@ export default async function DashboardPage() {
     0
   );
 
+  // Fetch total bookings count (for onboarding detection)
+  const { count: totalBookingsCount } = await supabase
+    .from('bookings')
+    .select('*', { count: 'exact', head: true })
+    .eq('parent_id', user.id)
+    .in('status', ['confirmed', 'pending', 'completed', 'cancelled']);
+
+  // Determine if user is "new" (needs onboarding)
+  const hasSubscriptionOrCredits = !!subscription || availableCredits > 0;
+  const hasAthletes = (athletes?.length || 0) > 0;
+  const hasBookings = (totalBookingsCount || 0) > 0;
+
+  // User is new if ALL of these are false
+  const isNewUser = !hasSubscriptionOrCredits && !hasAthletes && !hasBookings;
+
+  // Show onboarding if:
+  // 1. User is new AND hasn't skipped via param or cookie
+  // 2. OR user has started but not completed onboarding (partial progress)
+  const showOnboarding = !skipOnboarding && !onboardingSkippedCookie && (
+    isNewUser || (!hasSubscriptionOrCredits && !hasBookings)
+  );
+
   // Get next upcoming session for CTA display
   const nextSession = upcomingSessions?.[0]
     ? {
@@ -225,12 +259,27 @@ export default async function DashboardPage() {
   // For now, we'll show a placeholder or hide if no invoices system exists
   const outstandingBalance = 0; // TODO: Implement when invoices table is added
 
+  // Show onboarding view for new users
+  if (showOnboarding) {
+    return (
+      <OnboardingView
+        firstName={firstName}
+        hasSubscriptionOrCredits={hasSubscriptionOrCredits}
+        hasAthletes={hasAthletes}
+        hasBookings={hasBookings}
+      />
+    );
+  }
+
+  // Display name for returning users
+  const displayName = firstName || 'there';
+
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
       <div>
         <h1 className="text-2xl lg:text-3xl font-bold text-white">
-          Welcome back, {firstName}!
+          Welcome back, {displayName}!
         </h1>
         <p className="text-neutral-400 mt-1">
           Here&apos;s your family&apos;s training overview
@@ -335,10 +384,10 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* My Athletes */}
+      {/* My Team */}
       <div className="bg-charcoal-900 border border-charcoal-800 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-white">My Athletes</h2>
+          <h2 className="text-lg font-semibold text-white">My Team</h2>
           <Link
             href="/athletes"
             className="text-sm text-accent-500 hover:text-accent-400 transition-colors"
@@ -391,7 +440,7 @@ export default async function DashboardPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
-            <p className="text-neutral-400 mb-4">No athletes added yet</p>
+            <p className="text-neutral-400 mb-4">No trainees added yet</p>
             <Link
               href="/athletes"
               className="inline-flex items-center gap-2 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white font-medium rounded-lg transition-colors"
@@ -399,7 +448,7 @@ export default async function DashboardPage() {
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              Add Athlete
+              Add Trainee
             </Link>
           </div>
         )}

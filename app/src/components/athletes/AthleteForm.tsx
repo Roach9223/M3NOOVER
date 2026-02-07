@@ -84,7 +84,7 @@ export function AthleteForm({ athlete, onSuccess }: AthleteFormProps) {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'Failed to save athlete');
+        throw new Error(data.error || 'Failed to save');
       }
 
       const savedAthlete = await res.json();
@@ -95,7 +95,7 @@ export function AthleteForm({ athlete, onSuccess }: AthleteFormProps) {
         router.push('/athletes');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save athlete');
+      setError(err instanceof Error ? err.message : 'Failed to save');
     } finally {
       setIsSubmitting(false);
     }
@@ -118,7 +118,7 @@ export function AthleteForm({ athlete, onSuccess }: AthleteFormProps) {
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Athlete's full name"
+          placeholder="Full name"
           className="w-full px-4 py-3 bg-charcoal-800 border border-charcoal-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500"
           required
         />
@@ -223,7 +223,7 @@ export function AthleteForm({ athlete, onSuccess }: AthleteFormProps) {
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Any additional information about the athlete"
+          placeholder="Any additional information Coach Chuck should know"
           rows={3}
           className="w-full px-4 py-3 bg-charcoal-800 border border-charcoal-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500 resize-none"
         />
@@ -241,7 +241,7 @@ export function AthleteForm({ athlete, onSuccess }: AthleteFormProps) {
           Cancel
         </Button>
         <Button type="submit" variant="primary" disabled={isSubmitting} className="flex-1">
-          {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Athlete'}
+          {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Trainee'}
         </Button>
       </div>
     </form>

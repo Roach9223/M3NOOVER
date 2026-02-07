@@ -103,7 +103,7 @@ export default function AdminSchedulePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Schedule Management</h1>
+          <h1 className="text-2xl font-bold text-white">Schedule</h1>
           <p className="text-neutral-400 mt-1">View and manage all booked sessions</p>
         </div>
         <div className="flex gap-3">

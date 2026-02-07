@@ -23,26 +23,45 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
   const searchParams = useSearchParams();
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const isNewBooking = searchParams.get('booked') === 'true';
 
   useEffect(() => {
     async function fetchBooking() {
       try {
+        setError(null);
         const res = await fetch(`/api/scheduling/bookings/${id}`);
+
         if (res.ok) {
           const data = await res.json();
           setBooking(data);
+        } else {
+          const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+
+          // For new bookings, retry a few times as there might be replication lag
+          if (isNewBooking && retryCount < 3 && res.status === 404) {
+            console.log(`Booking not found yet, retrying (${retryCount + 1}/3)...`);
+            setTimeout(() => {
+              setRetryCount(prev => prev + 1);
+            }, 1000);
+            return;
+          }
+
+          setError(errorData.error || `Failed to load booking (${res.status})`);
+          console.error('API error:', res.status, errorData);
         }
-      } catch (error) {
-        console.error('Failed to fetch booking:', error);
+      } catch (err) {
+        console.error('Failed to fetch booking:', err);
+        setError('Failed to connect to server');
       } finally {
         setLoading(false);
       }
     }
 
     fetchBooking();
-  }, [id]);
+  }, [id, isNewBooking, retryCount]);
 
   const handleCancel = async () => {
     if (!confirm('Are you sure you want to cancel this session?')) return;
@@ -74,21 +93,66 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
     );
   }
 
-  if (!booking) {
+  if (error || !booking) {
     return (
-      <div className="text-center py-12">
-        <p className="text-neutral-400">Booking not found.</p>
-        <Link href="/schedule">
-          <Button variant="secondary" className="mt-4">
-            Back to Schedule
-          </Button>
-        </Link>
+      <div className="max-w-md mx-auto text-center py-12">
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 mb-6">
+          <svg className="w-12 h-12 text-red-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <h2 className="text-lg font-semibold text-white mb-2">
+            {error || 'Booking not found'}
+          </h2>
+          <p className="text-neutral-400 text-sm">
+            {isNewBooking
+              ? 'Your booking may still be processing. Please wait a moment and try again.'
+              : 'The booking you\'re looking for doesn\'t exist or you don\'t have permission to view it.'}
+          </p>
+        </div>
+        <div className="flex flex-col gap-3">
+          {isNewBooking && (
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setLoading(true);
+                setRetryCount(prev => prev + 1);
+              }}
+            >
+              Retry
+            </Button>
+          )}
+          <Link href="/schedule">
+            <Button variant="ghost" className="w-full">
+              Back to Schedule
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }
 
   const canCancel = booking.status === 'confirmed' || booking.status === 'pending';
-  const startDate = new Date(booking.start_time);
+
+  // Parse dates safely
+  let startDate: Date;
+  let endDate: Date;
+  try {
+    startDate = new Date(booking.start_time);
+    endDate = new Date(booking.end_time);
+    // Validate dates
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      throw new Error('Invalid date');
+    }
+  } catch {
+    return (
+      <div className="max-w-md mx-auto text-center py-12">
+        <p className="text-red-400">Error displaying booking: invalid date format</p>
+        <Link href="/schedule">
+          <Button variant="secondary" className="mt-4">Back to Schedule</Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
@@ -176,7 +240,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
               />
             </svg>
             <span>
-              {format(startDate, 'h:mm a')} - {format(new Date(booking.end_time), 'h:mm a')}
+              {format(startDate, 'h:mm a')} - {format(endDate, 'h:mm a')}
             </span>
           </div>
 

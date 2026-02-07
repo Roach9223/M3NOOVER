@@ -44,7 +44,12 @@ export async function GET(
   const { data, error } = await query.single();
 
   if (error) {
-    return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+    console.error('Error fetching booking:', { id, error: error.message, code: error.code });
+    // PGRST116 = Row not found
+    if (error.code === 'PGRST116') {
+      return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+    }
+    return NextResponse.json({ error: 'Failed to fetch booking', details: error.message }, { status: 500 });
   }
 
   return NextResponse.json(data);

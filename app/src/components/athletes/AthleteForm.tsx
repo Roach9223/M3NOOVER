@@ -241,7 +241,7 @@ export function AthleteForm({ athlete, onSuccess }: AthleteFormProps) {
           Cancel
         </Button>
         <Button type="submit" variant="primary" disabled={isSubmitting} className="flex-1">
-          {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Trainee'}
+          {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Athlete'}
         </Button>
       </div>
     </form>

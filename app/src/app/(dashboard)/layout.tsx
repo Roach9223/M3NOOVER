@@ -62,6 +62,7 @@ export default function DashboardLayout({
         <Header
           userName={user?.fullName || undefined}
           userEmail={user?.email}
+          userRole={user?.role}
           onMenuClick={() => setSidebarOpen(true)}
         />
         <main className={`flex-1 p-4 lg:p-6 overflow-auto ${isAdmin ? 'pb-20 md:pb-6' : ''}`}>

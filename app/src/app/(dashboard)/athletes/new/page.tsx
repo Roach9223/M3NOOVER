@@ -18,7 +18,7 @@ export default function NewAthletePage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-white">Add Trainee</h1>
+          <h1 className="text-2xl font-bold text-white">Add Athlete</h1>
           <p className="text-neutral-400 mt-1">Add someone new to your team</p>
         </div>
       </div>

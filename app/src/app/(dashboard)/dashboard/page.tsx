@@ -384,10 +384,10 @@ export default async function DashboardPage({
         </div>
       </div>
 
-      {/* My Team */}
+      {/* Athletes */}
       <div className="bg-charcoal-900 border border-charcoal-800 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-white">My Team</h2>
+          <h2 className="text-lg font-semibold text-white">Athletes</h2>
           <Link
             href="/athletes"
             className="text-sm text-accent-500 hover:text-accent-400 transition-colors"
@@ -440,7 +440,7 @@ export default async function DashboardPage({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
-            <p className="text-neutral-400 mb-4">No trainees added yet</p>
+            <p className="text-neutral-400 mb-4">No athletes added yet</p>
             <Link
               href="/athletes"
               className="inline-flex items-center gap-2 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white font-medium rounded-lg transition-colors"
@@ -448,7 +448,7 @@ export default async function DashboardPage({
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              Add Trainee
+              Add Athlete
             </Link>
           </div>
         )}

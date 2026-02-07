@@ -59,10 +59,10 @@ export function OnboardingView({
     {
       id: 'athlete',
       number: 2,
-      title: 'Add a Trainee',
+      title: 'Add an Athlete',
       description: 'Tell us who will be training so Coach Chuck can personalize their sessions',
       href: '/athletes/new',
-      buttonLabel: 'Add Trainee',
+      buttonLabel: 'Add Athlete',
       isComplete: hasAthletes,
       isLocked: !hasSubscriptionOrCredits,
       lockReason: 'Complete Step 1 first',

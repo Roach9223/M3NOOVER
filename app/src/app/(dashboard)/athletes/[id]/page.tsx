@@ -57,10 +57,10 @@ export default function AthleteDetailPage({
   if (!athlete) {
     return (
       <div className="text-center py-12">
-        <p className="text-neutral-400">Trainee not found</p>
+        <p className="text-neutral-400">Athlete not found</p>
         <Link href="/athletes">
           <Button variant="secondary" className="mt-4">
-            Back to My Team
+            Back to Athletes
           </Button>
         </Link>
       </div>

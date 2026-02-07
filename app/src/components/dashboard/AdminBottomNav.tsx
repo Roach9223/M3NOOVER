@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -7,12 +8,40 @@ interface AdminBottomNavProps {
   onAddNote: () => void;
 }
 
+const moreMenuItems = [
+  { label: 'Athletes', href: '/admin/athletes' },
+  { label: 'Invoices', href: '/admin/invoices' },
+  { label: 'Subscriptions', href: '/admin/subscriptions' },
+  { label: 'Settings', href: '/admin/settings' },
+];
+
 export function AdminBottomNav({ onAddNote }: AdminBottomNavProps) {
   const pathname = usePathname();
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setMoreMenuOpen(false);
+      }
+    }
+
+    if (moreMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [moreMenuOpen]);
+
+  // Close menu on route change
+  useEffect(() => {
+    setMoreMenuOpen(false);
+  }, [pathname]);
 
   const navItems = [
     {
-      label: 'Home',
+      label: 'Dashboard',
       href: '/admin',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -44,24 +73,53 @@ export function AdminBottomNav({ onAddNote }: AdminBottomNavProps) {
       href: '/admin/clients',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
         </svg>
       ),
     },
     {
-      label: 'Settings',
-      href: '/settings',
+      label: 'More',
+      action: 'openMoreMenu',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
         </svg>
       ),
     },
   ];
 
+  // Check if current path matches any "More" menu item
+  const isMoreActive = moreMenuItems.some(
+    (item) => pathname === item.href || pathname.startsWith(item.href + '/')
+  );
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-charcoal-900 border-t border-charcoal-800 md:hidden">
+      {/* More Menu Dropdown */}
+      {moreMenuOpen && (
+        <div
+          ref={moreMenuRef}
+          className="absolute bottom-16 right-2 w-48 bg-charcoal-800 border border-charcoal-700 rounded-xl shadow-xl overflow-hidden"
+        >
+          {moreMenuItems.map((item) => {
+            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`block px-4 py-3 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-accent-500/10 text-accent-500'
+                    : 'text-neutral-300 hover:bg-charcoal-700 hover:text-white'
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+
       <div className="flex items-center justify-around h-16 px-2">
         {navItems.map((item) => {
           if (item.action === 'openQuickNote') {
@@ -79,6 +137,23 @@ export function AdminBottomNav({ onAddNote }: AdminBottomNavProps) {
                 <span className="text-[10px] text-accent-400 mt-1 font-medium">
                   {item.label}
                 </span>
+              </button>
+            );
+          }
+
+          if (item.action === 'openMoreMenu') {
+            return (
+              <button
+                key={item.label}
+                onClick={() => setMoreMenuOpen(!moreMenuOpen)}
+                className={`flex flex-col items-center justify-center py-1 px-3 ${
+                  moreMenuOpen || isMoreActive ? 'text-accent-500' : 'text-neutral-400'
+                }`}
+                aria-label={item.label}
+                aria-expanded={moreMenuOpen}
+              >
+                {item.icon}
+                <span className="text-[10px] mt-0.5 font-medium">{item.label}</span>
               </button>
             );
           }

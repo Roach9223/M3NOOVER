@@ -10,19 +10,33 @@ import type { Booking } from '@/types/scheduling';
 interface SubscriptionInfo {
   hasActive: boolean;
   tierName: string | null;
+  tier: SubscriptionTier | null;
+  sessionsPerWeek: number | null;
+}
+
+interface SessionCredits {
+  available: number;
+  total: number;
 }
 
 export default function SchedulePage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [subscription, setSubscription] = useState<SubscriptionInfo>({ hasActive: false, tierName: null });
+  const [subscription, setSubscription] = useState<SubscriptionInfo>({
+    hasActive: false,
+    tierName: null,
+    tier: null,
+    sessionsPerWeek: null,
+  });
+  const [credits, setCredits] = useState<SessionCredits | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [bookingsRes, subscriptionRes] = await Promise.all([
+        const [bookingsRes, subscriptionRes, creditsRes] = await Promise.all([
           fetch('/api/scheduling/bookings'),
           fetch('/api/subscriptions/current'),
+          fetch('/api/session-credits'),
         ]);
 
         if (bookingsRes.ok) {
@@ -31,10 +45,27 @@ export default function SchedulePage() {
 
         if (subscriptionRes.ok) {
           const subData = await subscriptionRes.json();
-          if (subData && subData.status === 'active') {
-            const tierKey = subData.tier as SubscriptionTier | undefined;
+          // API returns { subscription: {...} } - access the nested subscription object
+          if (subData?.subscription?.status === 'active') {
+            const tierKey = subData.subscription.tier as SubscriptionTier | undefined;
             const tierName = tierKey ? STRIPE_PRODUCTS.subscriptions[tierKey]?.name : null;
-            setSubscription({ hasActive: true, tierName });
+            const sessionsPerWeek = tierKey ? STRIPE_PRODUCTS.subscriptions[tierKey]?.sessionsPerWeek : null;
+            setSubscription({
+              hasActive: true,
+              tierName,
+              tier: tierKey || null,
+              sessionsPerWeek,
+            });
+          }
+        }
+
+        if (creditsRes.ok) {
+          const creditsData = await creditsRes.json();
+          if (creditsData.available_sessions > 0 || creditsData.total_sessions > 0) {
+            setCredits({
+              available: creditsData.available_sessions,
+              total: creditsData.total_sessions,
+            });
           }
         }
       } catch (error) {
@@ -115,6 +146,9 @@ export default function SchedulePage() {
                     onCancel={() => handleCancel(booking.id)}
                     hasActiveSubscription={subscription.hasActive}
                     subscriptionTierName={subscription.tierName || undefined}
+                    subscriptionTier={subscription.tier || undefined}
+                    sessionsPerWeek={subscription.sessionsPerWeek || undefined}
+                    credits={credits || undefined}
                   />
                 ))}
               </div>
@@ -133,6 +167,10 @@ export default function SchedulePage() {
                     showCancelButton={false}
                     hasActiveSubscription={subscription.hasActive}
                     subscriptionTierName={subscription.tierName || undefined}
+                    subscriptionTier={subscription.tier || undefined}
+                    sessionsPerWeek={subscription.sessionsPerWeek || undefined}
+                    credits={credits || undefined}
+                    isPast
                   />
                 ))}
               </div>

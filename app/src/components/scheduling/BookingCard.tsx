@@ -5,6 +5,7 @@ import { Button } from '@m3noover/ui';
 import { format } from 'date-fns';
 import { formatAmountForDisplay } from '@/lib/format';
 import type { Booking } from '@/types/scheduling';
+import type { SubscriptionTier } from '@/lib/stripe/products';
 
 interface BookingCardProps {
   booking: Booking;
@@ -12,7 +13,21 @@ interface BookingCardProps {
   onCancel?: () => void;
   hasActiveSubscription?: boolean;
   subscriptionTierName?: string;
+  subscriptionTier?: SubscriptionTier;
+  sessionsPerWeek?: number;
+  credits?: {
+    available: number;
+    total: number;
+  };
+  isPast?: boolean;
 }
+
+const TIER_BADGE_COLORS: Record<SubscriptionTier, { bg: string; text: string }> = {
+  starter: { bg: 'bg-slate-500/20', text: 'text-slate-400' },
+  foundation: { bg: 'bg-blue-500/20', text: 'text-blue-400' },
+  competitor: { bg: 'bg-purple-500/20', text: 'text-purple-400' },
+  elite: { bg: 'bg-amber-500/20', text: 'text-amber-400' },
+};
 
 const statusColors: Record<string, string> = {
   pending: 'bg-yellow-500/10 text-yellow-400',
@@ -28,6 +43,10 @@ export function BookingCard({
   onCancel,
   hasActiveSubscription = false,
   subscriptionTierName,
+  subscriptionTier,
+  sessionsPerWeek,
+  credits,
+  isPast = false,
 }: BookingCardProps) {
   const [isCancelling, setIsCancelling] = useState(false);
 
@@ -106,10 +125,34 @@ export function BookingCard({
         </div>
 
         <div className="text-right">
-          {hasActiveSubscription ? (
-            <p className="text-sm font-medium text-green-400">
-              Included with {subscriptionTierName || 'Subscription'}
-            </p>
+          {hasActiveSubscription && subscriptionTier ? (
+            <div className="flex flex-col items-end gap-1">
+              <span
+                className={`text-xs px-2 py-1 rounded-full font-medium ${
+                  TIER_BADGE_COLORS[subscriptionTier].bg
+                } ${TIER_BADGE_COLORS[subscriptionTier].text}`}
+              >
+                {subscriptionTierName}
+              </span>
+              <p className="text-xs text-neutral-400">
+                {isPast ? (
+                  'Included'
+                ) : sessionsPerWeek === -1 ? (
+                  'Unlimited Sessions'
+                ) : sessionsPerWeek ? (
+                  `Up to ${sessionsPerWeek} session${sessionsPerWeek !== 1 ? 's' : ''}/week`
+                ) : null}
+              </p>
+            </div>
+          ) : credits && credits.available > 0 ? (
+            <div className="flex flex-col items-end gap-1">
+              <span className="text-sm font-medium text-accent-400">
+                1 credit
+              </span>
+              <p className="text-xs text-neutral-400">
+                {credits.available} credit{credits.available !== 1 ? 's' : ''} remaining
+              </p>
+            </div>
           ) : (
             booking.session_type?.price_cents && (
               <p className="text-xl font-bold text-white">

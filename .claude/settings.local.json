@@ -31,7 +31,8 @@
       "Bash(pnpm install:*)",
       "Bash(pnpm fetch-stripe-prices:*)",
       "Bash(npm run lint:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(node -e:*)"
     ]
   }
 }

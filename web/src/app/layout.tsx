@@ -7,17 +7,31 @@ import {
   LocalBusinessStructuredData,
   SportsActivityStructuredData,
   WebsiteStructuredData,
+  PersonalTrainerStructuredData,
+  ServiceStructuredData,
 } from '@/components/seo';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://m3noover.com'),
   title: {
-    default: `${brand.name.primary} | ${brand.pillarTagline}`,
-    template: `%s | ${brand.name.primary}`,
+    default: 'M3 Training | Athletic Training in Temecula, CA',
+    template: '%s | M3 Training Temecula',
   },
-  description: brand.tagline,
-  keywords: ['athletic training', 'youth sports', 'personal training', 'Temecula', 'fitness coaching'],
+  description:
+    'Elite athletic training in Temecula, CA. Coach Chuck offers 1-on-1, small group, and youth sports training. Serving Temecula, Murrieta, Menifee & surrounding areas.',
+  keywords: [
+    'athletic trainer temecula',
+    'sports training temecula',
+    'youth athletic training temecula',
+    'personal trainer temecula',
+    'speed and agility training temecula',
+    'athletic trainer murrieta',
+    'sports training murrieta',
+    'youth sports training menifee',
+    'high school athlete training',
+  ],
   authors: [{ name: 'M3NOOVER' }],
   icons: {
     icon: '/favicon.svg',
@@ -29,6 +43,14 @@ export const metadata: Metadata = {
     siteName: brand.name.primary,
     locale: 'en_US',
     type: 'website',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'M3 Training - Athletic Training in Temecula',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
@@ -52,6 +74,8 @@ export default function RootLayout({
         <LocalBusinessStructuredData />
         <SportsActivityStructuredData />
         <WebsiteStructuredData />
+        <PersonalTrainerStructuredData />
+        <ServiceStructuredData />
       </head>
       <body className="bg-black text-neutral-100 antialiased">
         <Navigation />

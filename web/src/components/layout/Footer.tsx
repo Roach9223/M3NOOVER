@@ -8,6 +8,7 @@ const footerLinks = {
     { label: 'Home', href: '/', external: false },
     { label: 'About', href: '/about', external: false },
     { label: 'Programs', href: '/programs', external: false },
+    { label: 'Service Areas', href: '/areas', external: false },
     { label: 'Contact', href: '/contact', external: false },
     { label: 'Client Portal', href: 'https://m3noover.app', external: true },
   ],
@@ -151,8 +152,19 @@ export function Footer() {
           </div>
         </div>
 
+        {/* Service Area */}
+        <div className="mt-12 pt-8 border-t border-charcoal-800">
+          <p className="text-sm text-neutral-500 text-center mb-6">
+            Located at Self Made Training Facility in Murrieta — Serving{' '}
+            <Link href="/areas" className="hover:text-neutral-300 transition-colors">
+              Temecula
+            </Link>
+            , Menifee, Wildomar, Lake Elsinore & surrounding areas
+          </p>
+        </div>
+
         {/* Bottom bar */}
-        <div className="mt-12 pt-8 border-t border-charcoal-800 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-neutral-500" data-testid="footer-copyright">
             &copy; {new Date().getFullYear()} {brand.name.legal}. All rights reserved.
           </p>

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { brand } from '@m3noover/shared';
 import { Button } from '@m3noover/ui';
 import Link from 'next/link';
@@ -13,6 +14,12 @@ import {
 } from '@/components/ui';
 import { MindsetIcon, MovementIcon, MasteryIcon, ArrowRightIcon } from '@/components/icons';
 import { pillarDescriptions, whyM3Features, testimonials } from '@/lib/constants';
+
+export const metadata: Metadata = {
+  title: 'M3 Training | Athletic Training in Temecula, CA | Youth & Adult',
+  description:
+    'Elite athletic training in the Temecula Valley. Coach Chuck offers 1-on-1, small group, and youth sports training at Self Made Training Facility in Murrieta. Serving Temecula, Murrieta, Menifee & surrounding areas.',
+};
 
 export default function HomePage() {
   return (

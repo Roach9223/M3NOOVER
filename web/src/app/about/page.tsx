@@ -7,8 +7,9 @@ import { CheckIcon, ArrowRightIcon } from '@/components/icons';
 import { coachStory } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'About Coach Chuck | M3NOOVER',
-  description: 'Learn about Coach Chuck and the M3NOOVER training philosophy. Honesty over hype, effort over excuses, progress over perfection.',
+  title: 'About Coach Chuck | Athletic Trainer in Temecula, CA',
+  description:
+    "Meet Coach Chuck — Temecula's trusted athletic trainer for youth and adult athletes. Training at Self Made Training Facility in Murrieta. Mindset. Movement. Mastery.",
 };
 
 export default function AboutPage() {

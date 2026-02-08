@@ -6,8 +6,9 @@ import { ArrowRightIcon } from '@/components/icons';
 import { programs } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'Training Programs | M3NOOVER',
-  description: 'Explore our training programs: Youth Athletes, Small Group Training, 1-on-1 Personal Training, and Seasonal Camps.',
+  title: 'Training Programs | Youth & Adult Athletic Training Temecula',
+  description:
+    'Explore M3 Training programs: 1-on-1 coaching, small group training, youth athlete development, and seasonal camps in Temecula, CA. Serving Murrieta, Menifee & the Temecula Valley.',
 };
 
 export default function ProgramsPage() {

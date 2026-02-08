@@ -14,8 +14,9 @@ const ContactForm = dynamic(
 );
 
 export const metadata: Metadata = {
-  title: 'Contact | M3NOOVER',
-  description: 'Get in touch with Coach Chuck at M3NOOVER. Located at Self Made Training Facility in Temecula, CA.',
+  title: 'Contact M3 Training | Athletic Trainer Temecula, CA',
+  description:
+    'Get in touch with Coach Chuck at M3 Training. Located at Self Made Training Facility in Murrieta, CA. Serving Temecula, Murrieta, Menifee & surrounding areas.',
 };
 
 export default function ContactPage() {
@@ -43,6 +44,13 @@ export default function ContactPage() {
 
             {/* Contact Info */}
             <div>
+              {/* Facility Callout */}
+              <div className="mb-8 p-4 rounded-xl bg-accent-500/10 border border-accent-500/20">
+                <p className="text-accent-400 font-semibold text-center">
+                  Located inside Self Made Training Facility — Temecula Valley
+                </p>
+              </div>
+
               <h2 className="text-2xl font-bold text-white mb-6">Contact Information</h2>
 
               <div className="space-y-6">

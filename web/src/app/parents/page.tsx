@@ -7,8 +7,9 @@ import { CalendarIcon, ChatIcon, ShieldIcon, HeartIcon, ArrowRightIcon } from '@
 import { parentFeatures } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'For Parents | M3NOOVER',
-  description: 'Learn how M3NOOVER keeps your young athlete safe while building strength, discipline, and confidence.',
+  title: 'Parents | Youth Athletic Training in Temecula, CA',
+  description:
+    'Safe, structured youth athletic training in Temecula. Learn how Coach Chuck develops young athletes through personalized coaching. Trusted by Temecula & Murrieta families.',
 };
 
 const featureIcons = [CalendarIcon, ChatIcon, HeartIcon, ShieldIcon];

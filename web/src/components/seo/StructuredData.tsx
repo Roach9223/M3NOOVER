@@ -1,48 +1,33 @@
 import { brand } from '@m3noover/shared';
 import { contactInfo } from '@/lib/constants';
 
-interface LocalBusinessSchema {
-  '@context': 'https://schema.org';
-  '@type': 'LocalBusiness';
-  '@id': string;
-  name: string;
-  description: string;
-  url: string;
-  telephone: string;
-  email: string;
-  address: {
-    '@type': 'PostalAddress';
-    streetAddress: string;
-    addressLocality: string;
-    addressRegion: string;
-    postalCode: string;
-    addressCountry: string;
-  };
-  geo: {
-    '@type': 'GeoCoordinates';
-    latitude: number;
-    longitude: number;
-  };
-  openingHoursSpecification: Array<{
-    '@type': 'OpeningHoursSpecification';
-    dayOfWeek: string[];
-    opens: string;
-    closes: string;
-  }>;
-  priceRange: string;
-  image: string;
-  sameAs: string[];
-}
-
-const localBusinessData: LocalBusinessSchema = {
+const localBusinessData = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
   '@id': 'https://m3noover.com/#organization',
-  name: brand.name.primary,
-  description: brand.tagline,
+  name: 'M3 Training - Coach Chuck',
+  description:
+    'Elite athletic training for youth and adults in the Temecula Valley. Located at Self Made Training Facility in Murrieta, CA.',
   url: 'https://m3noover.com',
   telephone: contactInfo.phone.tel,
   email: contactInfo.email,
+  location: {
+    '@type': 'Place',
+    name: 'Self Made Training Facility Temecula Valley',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: contactInfo.location.address.street,
+      addressLocality: contactInfo.location.address.city,
+      addressRegion: contactInfo.location.address.state,
+      postalCode: contactInfo.location.address.zip,
+      addressCountry: contactInfo.location.address.country,
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: contactInfo.location.coordinates.latitude,
+      longitude: contactInfo.location.coordinates.longitude,
+    },
+  },
   address: {
     '@type': 'PostalAddress',
     streetAddress: contactInfo.location.address.street,
@@ -56,6 +41,15 @@ const localBusinessData: LocalBusinessSchema = {
     latitude: contactInfo.location.coordinates.latitude,
     longitude: contactInfo.location.coordinates.longitude,
   },
+  areaServed: [
+    { '@type': 'City', name: 'Temecula' },
+    { '@type': 'City', name: 'Murrieta' },
+    { '@type': 'City', name: 'Menifee' },
+    { '@type': 'City', name: 'Wildomar' },
+    { '@type': 'City', name: 'Lake Elsinore' },
+    { '@type': 'City', name: 'French Valley' },
+    { '@type': 'City', name: 'Fallbrook' },
+  ],
   openingHoursSpecification: [
     {
       '@type': 'OpeningHoursSpecification',
@@ -70,7 +64,7 @@ const localBusinessData: LocalBusinessSchema = {
       closes: contactInfo.hours.saturday.close,
     },
   ],
-  priceRange: '$$',
+  priceRange: '$149-$699/month',
   image: 'https://m3noover.com/og-image.jpg',
   sameAs: [
     contactInfo.social.instagram,
@@ -79,22 +73,7 @@ const localBusinessData: LocalBusinessSchema = {
   ],
 };
 
-interface SportsActivitySchema {
-  '@context': 'https://schema.org';
-  '@type': 'SportsActivityLocation';
-  name: string;
-  description: string;
-  url: string;
-  sport: string[];
-  address: {
-    '@type': 'PostalAddress';
-    addressLocality: string;
-    addressRegion: string;
-    addressCountry: string;
-  };
-}
-
-const sportsActivityData: SportsActivitySchema = {
+const sportsActivityData = {
   '@context': 'https://schema.org',
   '@type': 'SportsActivityLocation',
   name: `${brand.name.primary} Athletic Training`,
@@ -111,11 +90,70 @@ const sportsActivityData: SportsActivitySchema = {
   ],
   address: {
     '@type': 'PostalAddress',
+    streetAddress: contactInfo.location.address.street,
     addressLocality: contactInfo.location.address.city,
     addressRegion: contactInfo.location.address.state,
+    postalCode: contactInfo.location.address.zip,
     addressCountry: contactInfo.location.address.country,
   },
+  areaServed: 'Temecula Valley, CA',
 };
+
+const personalTrainerData = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Coach Chuck',
+  jobTitle: 'Athletic Trainer & Coach',
+  worksFor: {
+    '@type': 'Organization',
+    name: 'M3 Training',
+    url: 'https://m3noover.com',
+  },
+  workLocation: {
+    '@type': 'Place',
+    name: 'Self Made Training Facility Temecula Valley',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: contactInfo.location.address.street,
+      addressLocality: contactInfo.location.address.city,
+      addressRegion: contactInfo.location.address.state,
+      postalCode: contactInfo.location.address.zip,
+    },
+  },
+  knowsAbout: [
+    'Athletic Training',
+    'Youth Sports Performance',
+    'Speed and Agility Training',
+    'Strength and Conditioning',
+  ],
+};
+
+const servicesData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: '1-on-1 Athletic Training',
+    description: 'Personalized one-on-one athletic training sessions',
+    provider: { '@type': 'SportsActivityLocation', name: 'M3 Training' },
+    areaServed: 'Temecula Valley, CA',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'Youth Athletic Training',
+    description: 'Age-appropriate training for student athletes ages 8-18',
+    provider: { '@type': 'SportsActivityLocation', name: 'M3 Training' },
+    areaServed: 'Temecula Valley, CA',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'Small Group Training',
+    description: 'Competitive training in groups of 3-5 athletes',
+    provider: { '@type': 'SportsActivityLocation', name: 'M3 Training' },
+    areaServed: 'Temecula Valley, CA',
+  },
+];
 
 export function LocalBusinessStructuredData() {
   return (
@@ -158,6 +196,28 @@ export function WebsiteStructuredData() {
       type="application/ld+json"
       dangerouslySetInnerHTML={{
         __html: JSON.stringify(websiteData),
+      }}
+    />
+  );
+}
+
+export function PersonalTrainerStructuredData() {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(personalTrainerData),
+      }}
+    />
+  );
+}
+
+export function ServiceStructuredData() {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(servicesData),
       }}
     />
   );
